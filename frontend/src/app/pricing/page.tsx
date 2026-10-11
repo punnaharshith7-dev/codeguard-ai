@@ -125,7 +125,7 @@ export default function PricingPage() {
   const [billing, setBilling] = useState<BillingCycle>("yearly");
   const [currency, setCurrency] = useState<CurrencyCode>("INR");
   const [autoPayEnabled, setAutoPayEnabled] = useState<boolean>(true);
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
   const activeCurrency = CURRENCIES[currency];
 
@@ -140,6 +140,48 @@ export default function PricingPage() {
   const calculateMonthlyEquivalent = (yearlyInr: number) => {
     const perMonthInr = Math.round(yearlyInr / 12);
     return formatPrice(perMonthInr);
+  };
+
+  const handleCheckout = (plan: PlanTier) => {
+    const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    const amountINR = billing === "monthly" ? plan.monthlyINR : plan.yearlyINR;
+
+    // Load Razorpay Checkout dynamically
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => {
+      if (!(window as any).Razorpay) {
+        alert("Razorpay checkout failed to load. Please check your internet connection.");
+        return;
+      }
+      const options = {
+        key: razorpayKey || "rzp_test_placeholder",
+        amount: amountINR * 100, // in paise
+        currency: "INR",
+        name: "CodeGuard AI",
+        description: `${plan.name} (${billing === "monthly" ? "Monthly" : "Annual"} ${autoPayEnabled ? "Subscription" : "Plan"})`,
+        image: "https://codeguard-ai-delta.vercel.app/favicon.ico",
+        handler: function (response: any) {
+          alert(`Payment Successful! Payment ID: ${response.razorpay_payment_id}. Your tokens have been credited.`);
+        },
+        prefill: {
+          name: "CodeGuard Developer",
+          email: "developer@codeguard.ai",
+        },
+        theme: {
+          color: "#9333ea",
+        },
+        modal: {
+          ondismiss: function () {
+            setLoadingPlan(null);
+          },
+        },
+      };
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    };
+    document.body.appendChild(script);
   };
 
   return (
@@ -323,18 +365,20 @@ export default function PricingPage() {
 
                 {/* Call To Action Button */}
                 <div className="mt-8 pt-4 border-t border-white/[.06]">
-                  <Link href={`/login?plan=${plan.id}&cycle=${billing}`}>
-                    <Button
-                      size="lg"
-                      className={`w-full h-12 rounded-xl text-[14px] font-semibold transition-all ${
-                        isHighlight
-                          ? "bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600 text-white shadow-[0_8px_30px_rgba(168,85,247,.4)] hover:brightness-110"
-                          : "border border-violet-300/25 bg-white/[.04] text-white hover:bg-white/[.09] hover:border-violet-300/40"
-                      }`}
-                    >
-                      <CreditCard size={15} /> {plan.ctaText} <ArrowRight size={15} />
-                    </Button>
-                  </Link>
+                  <Button
+                    onClick={() => {
+                      setLoadingPlan(plan.id);
+                      handleCheckout(plan);
+                    }}
+                    size="lg"
+                    className={`w-full h-12 rounded-xl text-[14px] font-semibold transition-all ${
+                      isHighlight
+                        ? "bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600 text-white shadow-[0_8px_30px_rgba(168,85,247,.4)] hover:brightness-110 cursor-pointer"
+                        : "border border-violet-300/25 bg-white/[.04] text-white hover:bg-white/[.09] hover:border-violet-300/40 cursor-pointer"
+                    }`}
+                  >
+                    <CreditCard size={15} /> {plan.ctaText} <ArrowRight size={15} />
+                  </Button>
 
                   <p className="mt-2.5 text-center text-[10px] text-zinc-500">
                     {autoPayEnabled ? "Auto-renews dynamically · Cancel anytime" : "One-time cycle payment"}
