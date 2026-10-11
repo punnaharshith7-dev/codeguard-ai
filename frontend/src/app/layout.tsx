@@ -1,7 +1,13 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth-provider";
 import { PageMotion } from "@/components/page-motion";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata: Metadata = {
   title: { default: "CodeGuard AI — Ship secure code, faster", template: "%s · CodeGuard AI" },
@@ -10,5 +16,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body><AuthProvider><PageMotion>{children}</PageMotion></AuthProvider></body></html>;
+  return <html lang="en"><body className="overflow-x-hidden min-w-[320px]"><AuthProvider><PageMotion>{children}</PageMotion></AuthProvider></body></html>;
 }

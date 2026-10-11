@@ -41,9 +41,9 @@ export default function HomePage() {
             <a href="#faq" className="transition hover:text-white">FAQ</a>
             <Link href="/privacy" className="transition hover:text-white">Privacy</Link>
           </nav>
-          <div className="flex items-center gap-2.5">
-            <Link href="/login" className="hidden rounded-lg px-4 py-2 text-[13px] text-zinc-200 transition hover:bg-white/[.06] sm:inline-flex">Sign in</Link>
-            <Link href="/register"><Button size="sm" className="h-10 rounded-lg px-4">Get started <ArrowUpRight size={14} /></Button></Link>
+          <div className="flex items-center gap-2">
+            <Link href="/login" className="rounded-lg px-3 py-2 text-[12px] text-zinc-300 transition hover:bg-white/[.06] hover:text-white sm:px-4 sm:text-[13px]">Sign in</Link>
+            <Link href="/register"><Button size="sm" className="h-9 rounded-lg px-3 text-[12px] sm:h-10 sm:px-4 sm:text-[13px]">Get started <ArrowUpRight size={14} /></Button></Link>
           </div>
         </div>
       </header>
