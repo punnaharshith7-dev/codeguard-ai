@@ -38,6 +38,7 @@ export default function HomePage() {
           <nav className="hidden items-center gap-8 text-[13px] font-medium text-zinc-300 md:flex">
             <a href="#features" className="transition hover:text-white">Platform</a>
             <a href="#workflow" className="transition hover:text-white">How it works</a>
+            <Link href="/pricing" className="text-violet-200 transition hover:text-white flex items-center gap-1 font-semibold">Pricing <span className="rounded-full bg-violet-400/20 px-1.5 py-0.2 text-[9px] text-fuchsia-300 border border-fuchsia-400/30">Plans</span></Link>
             <a href="#faq" className="transition hover:text-white">FAQ</a>
             <Link href="/privacy" className="transition hover:text-white">Privacy</Link>
           </nav>
