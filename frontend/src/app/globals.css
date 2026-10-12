@@ -58,6 +58,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     radial-gradient(ellipse 42% 50% at 76% 34%, rgba(14, 171, 210, .085), transparent 74%),
     radial-gradient(ellipse 32% 46% at 88% 52%, rgba(114, 73, 212, .09), transparent 72%);
 }
+.cg-scene-loading::after {
+  position: absolute;
+  inset: 56% -20% -24%;
+  content: "";
+  transform: perspective(560px) rotateX(62deg) scale(1.25);
+  transform-origin: center top;
+  background-image: linear-gradient(rgba(21,217,255,.15) 1px, transparent 1px), linear-gradient(90deg, rgba(21,217,255,.15) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, transparent, #000 25%, transparent 96%);
+  opacity: .35;
+  animation: cg-scene-floor 22s linear infinite;
+}
 .cg-scene-canvas-host, .cg-scene-canvas-host > div, .cg-scene-canvas-host canvas { position: absolute !important; inset: 0; width: 100% !important; height: 100% !important; }
 .cg-scene-canvas-host canvas { display: block; pointer-events: none; }
 .cg-dashboard-ambient {
@@ -221,7 +233,7 @@ button:active:not(:disabled) { transform: scale(.985); }
 .cg-hero { isolation: isolate; }
 .cg-hero-title { position: relative; z-index: 1; text-wrap: balance; }
 .cg-hero-title-line { display: inline-block; white-space: nowrap; }
-.cg-hero-title-line--accent { background: linear-gradient(105deg, #b7f4ff 5%, #17d8ff 44%, #a28aff 91%); background-clip: text; -webkit-background-clip: text; color: transparent; }
+.cg-hero-title-line--accent .cg-hero-letter { background: linear-gradient(105deg, #b7f4ff 5%, #17d8ff 44%, #a28aff 91%); background-clip: text; -webkit-background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
 .cg-hero-letter { display: inline-block; opacity: 0; animation: cg-letter-in 740ms cubic-bezier(.17,.79,.24,1) both; }
 .cg-hero-title-line--accent .cg-hero-letter { text-shadow: 0 0 24px rgba(21, 217, 255, .13); }
 .cg-cta-primary { position: relative; isolation: isolate; background: linear-gradient(110deg, #10bbda, #2678e9 60%, #7562ed); box-shadow: 0 9px 30px rgba(9, 176, 224, .27), inset 0 1px rgba(255,255,255,.18); animation: cg-cta-breathe 3.8s ease-in-out infinite; }
@@ -264,12 +276,13 @@ button:active:not(:disabled) { transform: scale(.985); }
 @keyframes cg-step-two { 0%, 30% { color: #aebbc5; background: transparent; } 38%, 56% { color: #dbeeff; background: rgba(152,115,255,.11); } 64%, 100% { color: #aebbc5; background: transparent; } }
 @keyframes cg-step-three { 0%, 60% { color: #aebbc5; background: transparent; } 68%, 87% { color: #ceffed; background: rgba(56,232,173,.09); } 95%, 100% { color: #aebbc5; background: transparent; } }
 @media (max-width: 640px) {
-  .cg-hero-title { font-size: clamp(2.65rem, 12vw, 4.3rem); letter-spacing: -.078em; }
+  .cg-hero-title { font-size: clamp(2rem, 10.3vw, 4.3rem); letter-spacing: -.078em; }
   .cg-review-window { transform: perspective(1100px) rotateX(1.7deg); }
   .cg-review-float:hover .cg-review-window { transform: perspective(1100px) rotateX(0); }
   .cg-custom-cursor { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .cg-scene-loading::after { animation: none !important; }
   .cg-hero-letter { opacity: 1; animation: none !important; filter: none; transform: none; }
   .cg-review-float, .cg-review-window { transform: none !important; }
   .cg-review-line, .cg-preview-line, .cg-review-diff span, .cg-review-step, .cg-review-finding, .cg-signal-dot svg, .cg-cta-primary { animation: none !important; }
@@ -364,6 +377,7 @@ button:active:not(:disabled) { transform: scale(.985); }
 .cg-footer::after { background-image: linear-gradient(rgba(125,201,222,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(125,201,222,.035) 1px, transparent 1px); background-size: 62px 62px; mask-image: linear-gradient(to bottom, rgba(0,0,0,.72), transparent 88%); animation: cg-grid-drift 32s ease-in-out infinite alternate; }
 .cg-footer > * { position: relative; z-index: 1; }
 @keyframes cg-marquee-travel { to { transform: translateX(-50%); } }
+@keyframes cg-scene-floor { to { background-position: 0 56px, 0 56px; } }
 @keyframes cg-feature-orbit { 0%, 100% { transform: perspective(600px) rotateX(0) rotateY(0) translateZ(12px); } 50% { transform: perspective(600px) rotateX(8deg) rotateY(-11deg) translateZ(20px); } }
 @keyframes cg-stage-float { 0%, 100% { transform: perspective(1200px) rotateY(1.2deg) translateY(0); } 50% { transform: perspective(1200px) rotateY(-.5deg) translateY(-5px); } }
 @keyframes cg-row-focus { 0%, 100% { color: #94a8b6; background: transparent; } 48% { color: #c8f6ff; background: rgba(21,217,255,.055); } }

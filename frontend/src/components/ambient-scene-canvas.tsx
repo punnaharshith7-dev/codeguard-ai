@@ -1,11 +1,9 @@
 "use client";
 
-import { Bloom, EffectComposer } from "@react-three/postprocessing";
-import { Edges, Grid, Sparkles } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { RefObject } from "react";
-import { BufferGeometry, CanvasTexture, Color, DoubleSide, ExtrudeGeometry, InstancedMesh, Object3D, Shape, SRGBColorSpace, Vector3 } from "three";
+import { BufferGeometry, CanvasTexture, Color, DoubleSide, EdgesGeometry, ExtrudeGeometry, Float32BufferAttribute, InstancedMesh, Object3D, Shape, SRGBColorSpace, Vector3 } from "three";
 import type { Group } from "three";
 import { useReducedMotion } from "framer-motion";
 
@@ -82,6 +80,7 @@ function ShieldModel({ reducedMotion, lowPower }: { reducedMotion: boolean; lowP
     outline.closePath();
     return new ExtrudeGeometry(outline, { depth: 0.16, bevelEnabled: true, bevelThickness: 0.055, bevelSize: 0.045, bevelSegments: 2, curveSegments: 16 });
   }, []);
+  const edgeGeometry = useMemo(() => new EdgesGeometry(shieldGeometry, 18), [shieldGeometry]);
   const checkGeometry = useMemo(() => new BufferGeometry().setFromPoints([
     new Vector3(-0.42, -0.02, 0.26),
     new Vector3(-0.11, -0.33, 0.26),
@@ -125,8 +124,10 @@ function ShieldModel({ reducedMotion, lowPower }: { reducedMotion: boolean; lowP
       <group ref={shell} position={[0, 0.55, 0]}>
         <mesh geometry={shieldGeometry}>
           <meshPhysicalMaterial color="#071925" emissive="#052e40" emissiveIntensity={0.42} transparent opacity={0.78} metalness={0.5} roughness={0.24} clearcoat={0.9} side={DoubleSide} />
-          <Edges threshold={18} color="#58e7ff" />
         </mesh>
+        <lineSegments geometry={edgeGeometry}>
+          <lineBasicMaterial color="#58e7ff" transparent opacity={0.86} toneMapped={false} />
+        </lineSegments>
         <lineSegments geometry={checkGeometry} position={[0, 0, 0.03]}>
           <lineBasicMaterial color="#8df2ff" transparent opacity={0.92} toneMapped={false} />
         </lineSegments>
@@ -136,6 +137,46 @@ function ShieldModel({ reducedMotion, lowPower }: { reducedMotion: boolean; lowP
         </instancedMesh>
       </group>
       <pointLight position={[0, 0.35, 0.8]} color="#09d5ff" intensity={lowPower ? 0.65 : 1.15} distance={5.5} />
+    </group>
+  );
+}
+
+function ParticleField({ count, reducedMotion }: { count: number; reducedMotion: boolean }) {
+  const field = useRef<Group>(null);
+  const geometry = useMemo(() => {
+    const positions = new Float32Array(count * 3);
+    for (let index = 0; index < count; index += 1) {
+      positions[index * 3] = Math.sin(index * 127.1) * 6.4;
+      positions[index * 3 + 1] = Math.sin(index * 311.7) * 3.7;
+      positions[index * 3 + 2] = Math.cos(index * 74.7) * 3.1;
+    }
+    const points = new BufferGeometry();
+    points.setAttribute("position", new Float32BufferAttribute(positions, 3));
+    return points;
+  }, [count]);
+
+  useEffect(() => () => geometry.dispose(), [geometry]);
+
+  useFrame((_, delta) => {
+    if (!field.current || reducedMotion) return;
+    const step = Math.min(delta, 0.05);
+    field.current.rotation.y += step * 0.012;
+    field.current.rotation.x = Math.sin(performance.now() * 0.00012) * 0.025;
+  });
+
+  return (
+    <group ref={field}>
+      <points geometry={geometry}>
+        <pointsMaterial
+          color="#9ceeff"
+          size={0.035}
+          sizeAttenuation
+          transparent
+          opacity={0.48}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </points>
     </group>
   );
 }
@@ -222,33 +263,7 @@ function Scene({ input, reducedMotion, lowPower, mode }: { input: RefObject<Scen
       <OrbitSystem reducedMotion={reducedMotion} lowPower={lowPower} ambient={!hero} />
       {hero && <ShieldModel reducedMotion={reducedMotion} lowPower={lowPower} />}
       {hero && !lowPower && <GlyphCloud lowPower={lowPower} />}
-      <Sparkles
-        count={hero ? (lowPower ? 18 : 72) : (lowPower ? 8 : 24)}
-        scale={[12, 7, 6]}
-        size={lowPower ? 1.7 : 2.3}
-        speed={reducedMotion ? 0 : lowPower ? 0.18 : 0.34}
-        opacity={0.48}
-        color="#9ceeff"
-        noise={0.6}
-      />
-      {hero && !lowPower && <Grid
-        position={[0, -3.25, -0.5]}
-        args={[180, 180]}
-        cellSize={0.95}
-        cellThickness={0.32}
-        cellColor="#164456"
-        sectionSize={4.75}
-        sectionThickness={0.7}
-        sectionColor="#12647b"
-        fadeDistance={19}
-        fadeStrength={1.25}
-        infiniteGrid
-      />}
-      {hero && !lowPower && !reducedMotion && (
-        <EffectComposer multisampling={0} enableNormalPass={false}>
-          <Bloom intensity={0.22} luminanceThreshold={0.78} luminanceSmoothing={0.12} mipmapBlur />
-        </EffectComposer>
-      )}
+      <ParticleField count={hero ? (lowPower ? 20 : 64) : 24} reducedMotion={reducedMotion} />
     </>
   );
 }
