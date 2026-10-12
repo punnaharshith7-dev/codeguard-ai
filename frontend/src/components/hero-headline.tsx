@@ -1,13 +1,15 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { useScramble } from "@/lib/motion/hooks";
 
 function LetterLine({ text, tone }: { text: string; tone?: "accent" }) {
+  const decodedText = useScramble(text, { duration: "cinematic" });
   return (
     <span aria-hidden="true" className={`cg-hero-title-line${tone ? " cg-hero-title-line--accent" : ""}`}>
-      {Array.from(text).map((character, index) => (
+      {Array.from(decodedText).map((character, index) => (
         <span
-          key={`${character}-${index}`}
+          key={index}
           className="cg-hero-letter"
           style={{ animationDelay: `${120 + index * 22}ms` } as CSSProperties}
         >

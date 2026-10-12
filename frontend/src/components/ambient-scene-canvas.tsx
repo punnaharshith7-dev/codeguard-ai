@@ -6,6 +6,7 @@ import type { RefObject } from "react";
 import { BufferGeometry, CanvasTexture, Color, DoubleSide, EdgesGeometry, ExtrudeGeometry, Float32BufferAttribute, InstancedMesh, Object3D, Shape, SRGBColorSpace, Vector3 } from "three";
 import type { Group } from "three";
 import { useReducedMotion } from "framer-motion";
+import type { MotionIntensity } from "@/lib/motion/tokens";
 
 type SceneInput = { x: number; y: number; scroll: number };
 
@@ -268,7 +269,7 @@ function Scene({ input, reducedMotion, lowPower, mode }: { input: RefObject<Scen
   );
 }
 
-export default function AmbientSceneCanvas({ mode }: { mode: "hero" | "ambient" }) {
+export default function AmbientSceneCanvas({ mode, intensity }: { mode: "hero" | "ambient"; intensity: MotionIntensity }) {
   const reducedPreference = useReducedMotion();
   const [reducedMotion, setReducedMotion] = useState(false);
   const [lowPower, setLowPower] = useState(false);
@@ -280,8 +281,9 @@ export default function AmbientSceneCanvas({ mode }: { mode: "hero" | "ambient" 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     const hardware = navigator as Navigator & { deviceMemory?: number };
     const updatePreferences = () => {
-      setReducedMotion(reduced.matches || reducedPreference === true);
+      setReducedMotion(reduced.matches || reducedPreference === true || intensity === "minimal");
       setLowPower(window.matchMedia("(max-width: 720px), (pointer: coarse)").matches ||
+        intensity === "balanced" ||
         (hardware.hardwareConcurrency > 0 && hardware.hardwareConcurrency <= 4) ||
         (typeof hardware.deviceMemory === "number" && hardware.deviceMemory <= 4));
     };
@@ -317,7 +319,7 @@ export default function AmbientSceneCanvas({ mode }: { mode: "hero" | "ambient" 
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("scroll", onScroll);
     };
-  }, [reducedPreference]);
+  }, [intensity, reducedPreference]);
 
   return (
     <div ref={hostRef} className="cg-scene-canvas-host">

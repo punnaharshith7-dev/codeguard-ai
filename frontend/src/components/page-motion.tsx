@@ -2,21 +2,52 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AmbientScene } from "@/components/ambient-scene";
 import { MotionTools } from "@/components/motion-tools";
+import { useMotionSettings } from "@/components/motion-system-provider";
+import { intensityDuration, MOTION } from "@/lib/motion/tokens";
+import { subscribeMotionFrame } from "@/lib/motion/frame-loop";
 
 const dashboardRoute = (pathname: string) => pathname.startsWith("/dashboard");
 const publicSceneRoutes = new Set(["/", "/pricing", "/login", "/register", "/forgot-password", "/reset-password", "/privacy", "/terms"]);
+const preloaderStorageKey = "codeguard-system-intro-seen";
+
+function SystemPreloader({ reducedMotion }: { reducedMotion: boolean }) {
+  const [visible, setVisible] = useState(false);
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    if (reducedMotion) return;
+    try {
+      if (window.sessionStorage.getItem(preloaderStorageKey)) return;
+      window.sessionStorage.setItem(preloaderStorageKey, "1");
+    } catch {
+      // The intro is optional when session storage is unavailable.
+      return;
+    }
+    setVisible(true);
+    const stepTimer = window.setTimeout(() => setStep(1), 180);
+    const finishTimer = window.setTimeout(() => setVisible(false), 760);
+    return () => { window.clearTimeout(stepTimer); window.clearTimeout(finishTimer); };
+  }, [reducedMotion]);
+
+  return <AnimatePresence>{visible && <motion.aside className="cg-system-preloader" role="status" aria-live="polite" aria-label="Initializing the CodeGuard interface" initial={{ opacity: 1 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: MOTION.duration.fast } }}>
+    <div className="cg-system-boot" aria-hidden="true"><span className="cg-system-boot__mark">CG</span><div className="cg-system-boot__copy"><strong>SYSTEM INITIALIZING</strong><span>{step ? "INTERFACE READY" : "LOADING MOTION CORE"}</span></div><span className="cg-system-boot__indicator" /></div>
+    <button type="button" className="cg-system-skip" onClick={() => setVisible(false)}>Skip intro</button>
+  </motion.aside>}</AnimatePresence>;
+}
 
 export function PageMotion({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const rootRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
+  const { effectiveIntensity } = useMotionSettings();
+  const motionReduced = prefersReducedMotion || effectiveIntensity === "minimal";
 
   useEffect(() => {
     const root = rootRef.current;
-    if (!root || prefersReducedMotion || !("IntersectionObserver" in window)) return;
+    if (!root || motionReduced || !("IntersectionObserver" in window)) return;
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         const element = entry.target as HTMLElement;
@@ -38,7 +69,7 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
     const mutationObserver = new MutationObserver(observeTargets);
     mutationObserver.observe(root, { childList: true, subtree: true });
     return () => { observer.disconnect(); mutationObserver.disconnect(); };
-  }, [pathname, prefersReducedMotion]);
+  }, [pathname, motionReduced]);
 
   useEffect(() => {
     const shell = rootRef.current;
@@ -69,7 +100,7 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const shell = rootRef.current;
-    if (!shell || pathname !== "/" || prefersReducedMotion || window.matchMedia("(pointer: coarse)").matches) return;
+    if (!shell || pathname !== "/" || motionReduced || window.matchMedia("(pointer: coarse)").matches) return;
     let alive = true;
     let lenis: import("lenis").default | undefined;
     let ticker: ((time: number) => void) | undefined;
@@ -142,17 +173,16 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
       lenis?.destroy();
       scrollTriggerModule?.getAll().forEach((trigger) => trigger.kill());
     };
-  }, [pathname, prefersReducedMotion]);
+  }, [pathname, motionReduced]);
 
   useEffect(() => {
-    if (prefersReducedMotion || !window.matchMedia("(pointer: fine)").matches) return;
+    if (motionReduced || !window.matchMedia("(pointer: fine)").matches) return;
     const shell = rootRef.current;
     if (!shell) return;
     const cursor = shell.querySelector<HTMLElement>("[data-cg-cursor-dot]");
     const trail = shell.querySelector<HTMLElement>("[data-cg-cursor-trail]");
     if (!cursor || !trail) return;
 
-    let frame = 0;
     let x = window.innerWidth / 2;
     let y = window.innerHeight / 2;
     let trailX = x;
@@ -162,19 +192,21 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
       trailY += (y - trailY) * 0.18;
       cursor.style.transform = `translate3d(${x}px, ${y}px, 0)`;
       trail.style.transform = `translate3d(${trailX}px, ${trailY}px, 0)`;
-      frame = requestAnimationFrame(render);
     };
     const onPointerMove = (event: PointerEvent) => {
       x = event.clientX;
       y = event.clientY;
+      const target = event.target instanceof Element ? event.target : null;
+      const context = target?.closest("input, textarea, [contenteditable='true']") ? "text" : target?.closest("a[href]") ? "link" : target?.closest("button, [role='button']") ? "button" : "default";
+      shell.dataset.cursorContext = context;
     };
     window.addEventListener("pointermove", onPointerMove, { passive: true });
-    frame = requestAnimationFrame(render);
+    const stopFrame = subscribeMotionFrame(render);
     return () => {
-      cancelAnimationFrame(frame);
+      stopFrame();
       window.removeEventListener("pointermove", onPointerMove);
     };
-  }, [pathname, prefersReducedMotion]);
+  }, [pathname, motionReduced]);
 
   const isDashboard = dashboardRoute(pathname);
   const showPublicScene = publicSceneRoutes.has(pathname);
@@ -186,15 +218,16 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
       <div className="cg-scroll-progress" data-cg-scroll-progress aria-hidden="true" />
       <div className="cg-custom-cursor cg-custom-cursor--trail" data-cg-cursor-trail aria-hidden="true" />
       <div className="cg-custom-cursor cg-custom-cursor--dot" data-cg-cursor-dot aria-hidden="true" />
+      <SystemPreloader reducedMotion={Boolean(prefersReducedMotion || effectiveIntensity === "minimal")} />
       <MotionTools />
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={pathname}
           className="cg-page-content"
-          initial={prefersReducedMotion ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={prefersReducedMotion ? undefined : { opacity: 0 }}
-          transition={{ duration: prefersReducedMotion ? 0 : 0.28, ease: [0.2, 0.72, 0.22, 1] }}
+          initial={motionReduced ? false : { opacity: 0, y: 7 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={motionReduced ? undefined : { opacity: 0, y: -4 }}
+          transition={{ duration: motionReduced ? 0 : intensityDuration(effectiveIntensity), ease: MOTION.ease.standard }}
         >
           {children}
         </motion.div>
