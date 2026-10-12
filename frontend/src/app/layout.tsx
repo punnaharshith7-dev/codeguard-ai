@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth-provider";
 import { PageMotion } from "@/components/page-motion";
+import { MotionSystemProvider } from "@/components/motion-system-provider";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -16,5 +17,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body className="overflow-x-hidden min-w-[320px]"><AuthProvider><PageMotion>{children}</PageMotion></AuthProvider></body></html>;
+  return <html lang="en"><body className="overflow-x-hidden min-w-[320px]"><AuthProvider><MotionSystemProvider><PageMotion>{children}</PageMotion></MotionSystemProvider></AuthProvider></body></html>;
 }

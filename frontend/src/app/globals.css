@@ -445,3 +445,15 @@ button:active:not(:disabled) { transform: scale(.985); }
 @media (prefers-reduced-motion: reduce) {
   .cg-auth-mark { box-shadow: none; }
 }
+
+/* Motion-system primitives: values are emitted from lib/motion/tokens.ts. */
+.cg-motion-root { min-height: 100vh; }
+.cg-motion-magnetic { --cg-magnetic-x: 0px; --cg-magnetic-y: 0px; transform: translate3d(var(--cg-magnetic-x), var(--cg-magnetic-y), 0); transition: transform var(--cg-motion-base) var(--cg-motion-ease); }
+.cg-motion-magnetic[data-magnetic-active="true"] { transition-duration: var(--cg-motion-fast); }
+.cg-motion-tilt { transform: perspective(1000px) rotateX(var(--cg-tilt-x, 0deg)) rotateY(var(--cg-tilt-y, 0deg)); transform-style: preserve-3d; transition: transform var(--cg-motion-base) var(--cg-motion-ease); }
+.cg-motion-tilt[data-tilt-active="true"] { transition-duration: var(--cg-motion-fast); }
+.cg-motion-root[data-motion-intensity="minimal"] :is(.cg-aurora, .cg-grid-drift, .cg-orbiting, .cg-scan-pulse, .cg-working-dot, .cg-marquee__track, .cg-feature-icon, .cg-final-shield, .cg-final-shield svg, .cg-footer::before, .cg-footer::after) { animation-play-state: paused !important; }
+.cg-motion-root[data-motion-intensity="minimal"] :is(.cg-card, .cg-site-header, .cg-site-header > div, .cg-tilt-card-inner, .cg-motion-magnetic, .cg-motion-tilt) { transition-duration: var(--cg-motion-fast) !important; }
+@media (prefers-reduced-motion: reduce) {
+  .cg-motion-magnetic, .cg-motion-tilt { transform: none !important; }
+}
