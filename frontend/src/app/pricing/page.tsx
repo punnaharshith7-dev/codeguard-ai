@@ -185,19 +185,19 @@ export default function PricingPage() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#080713] text-white">
+    <main className="cg-public-theme cg-pricing-page relative min-h-screen overflow-hidden text-white">
       {/* Background Aurora & Grid */}
       <div aria-hidden className="cg-aurora pointer-events-none absolute inset-x-0 top-0 h-[800px] bg-[radial-gradient(ellipse_54%_58%_at_50%_0%,rgba(106,33,220,.42),transparent_78%)]" />
       <div aria-hidden className="cg-grid-drift grid-noise pointer-events-none absolute inset-x-0 top-0 h-[800px] opacity-30" />
 
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-white/[.055] bg-[#080713]/70 backdrop-blur-2xl">
+      <header data-cg-header className="cg-site-header sticky top-0 z-30 border-b border-white/[.055] bg-[#080713]/70 backdrop-blur-2xl">
         <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 sm:px-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <span className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-violet-700 text-white shadow-[0_0_26px_rgba(161,0,247,.36)]">
+            <span className="cg-brand-mark grid size-9 place-items-center rounded-xl text-white">
               <Shield size={18} strokeWidth={2.3} />
             </span>
-            <span className="text-[15px] font-semibold tracking-[-.04em]">codeguard<span className="text-fuchsia-400">.</span>ai</span>
+            <span className="text-[15px] font-semibold tracking-[-.04em]">codeguard<span className="text-cyan-300">.</span>ai</span>
           </Link>
 
           <div className="flex items-center gap-3">

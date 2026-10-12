@@ -63,18 +63,18 @@ export function AuthForm({ mode }: { mode: Mode }) {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-24">
-      <div aria-hidden className="grid-noise pointer-events-none absolute inset-x-0 top-0 h-[720px] opacity-30" />
+    <main className="cg-public-theme cg-auth-page relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-24">
+      <div aria-hidden className="cg-auth-grid grid-noise pointer-events-none absolute inset-x-0 top-0 h-[720px] opacity-30" />
       <div aria-hidden className="pointer-events-none absolute -top-64 left-1/2 size-[720px] -translate-x-1/2 rounded-full bg-violet-700/[.16] blur-[140px]" />
-      <header className="absolute inset-x-0 top-0 z-10 border-b border-white/[.055] bg-[#080713]/45 backdrop-blur-xl">
+      <header data-cg-header className="cg-public-header absolute inset-x-0 top-0 z-10 border-b border-white/[.055] bg-[#080713]/45 backdrop-blur-xl">
         <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between px-5 sm:px-8">
-          <Link href="/" className="flex items-center gap-2.5"><span className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-fuchsia-500 to-violet-700 text-white"><Shield size={16} /></span><span className="text-sm font-semibold tracking-[-.04em] text-white">codeguard<span className="text-fuchsia-400">.</span>ai</span></Link>
+          <Link href="/" className="flex items-center gap-2.5"><span className="cg-brand-mark grid size-8 place-items-center rounded-lg text-white"><Shield size={16} /></span><span className="text-sm font-semibold tracking-[-.04em] text-white">codeguard<span className="text-cyan-300">.</span>ai</span></Link>
           <Link href="/" className="flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] text-zinc-400 transition hover:bg-white/[.05] hover:text-white"><ArrowLeft size={13} /> Back home</Link>
         </div>
       </header>
       <div className="relative z-10 w-full max-w-[460px] animate-fade-up pt-5">
         <div className="mb-7 flex flex-col items-center text-center">
-          <Link href="/" className="mb-5 grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-fuchsia-500 to-violet-700 text-white shadow-[0_0_36px_rgba(161,0,247,.3)]"><Shield size={22} /></Link>
+          <Link href="/" className="cg-auth-mark mb-5 grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-fuchsia-500 to-violet-700 text-white shadow-[0_0_36px_rgba(161,0,247,.3)]"><Shield size={22} /></Link>
           <span className="section-kicker">{text.eyebrow}</span>
           <h1 className="mt-4 text-3xl font-semibold tracking-[-.055em] text-white">{text.title}</h1>
           <p className="mt-2 text-[13px] text-zinc-400">{text.subtitle}</p>

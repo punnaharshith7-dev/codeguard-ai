@@ -24,6 +24,7 @@
   --cg-muted: #91a4b6;
   --cg-line: rgba(172, 222, 243, .11);
   --cg-glass: rgba(8, 17, 27, .76);
+  --cg-display: Inter, "Aptos Display", ui-sans-serif, system-ui, sans-serif;
   --cg-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
@@ -99,9 +100,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   backdrop-filter: blur(18px);
 }
 .cg-card { transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease; }
-.cg-card:hover { transform: translateY(-2px); border-color: rgba(196, 159, 255, .2); box-shadow: 0 22px 64px rgba(31, 12, 69, .32); }
+.cg-card:hover { transform: translateY(-2px); border-color: rgba(21, 217, 255, .22); box-shadow: 0 22px 64px rgba(3, 51, 72, .32); }
 .cg-card { position: relative; isolation: isolate; }
-.cg-card::before { content: ""; position: absolute; z-index: -1; inset: 0; border-radius: inherit; opacity: 0; pointer-events: none; background: radial-gradient(300px circle at var(--cg-pointer-x, 50%) var(--cg-pointer-y, 50%), rgba(166, 119, 255, .14), transparent 72%); transition: opacity 240ms ease; }
+.cg-card::before { content: ""; position: absolute; z-index: -1; inset: 0; border-radius: inherit; opacity: 0; pointer-events: none; background: radial-gradient(300px circle at var(--cg-pointer-x, 50%) var(--cg-pointer-y, 50%), rgba(21, 217, 255, .12), transparent 72%); transition: opacity 240ms ease; }
 .cg-card:hover::before { opacity: 1; }
 .cg-reveal { animation: cg-reveal 680ms cubic-bezier(.2,.72,.22,1) both; }
 .cg-reveal--delay-1 { animation-delay: 90ms; }
@@ -397,4 +398,36 @@ button:active:not(:disabled) { transform: scale(.985); }
   .cg-review-diff span, .cg-mini-removed, .cg-mini-added, .cg-mini-row, .cg-mini-reply, .cg-mini-caret { animation: none !important; }
   .cg-mini-reply { clip-path: none; width: auto; opacity: 1; }
   .cg-workflow-station { opacity: 1 !important; transform: none !important; }
+}
+.cg-public-theme { --cg-public-accent: var(--cg-cyan); --cg-public-soft: var(--cg-cyan-soft); }
+.cg-public-theme :is([class^="text-violet-"], [class*=" text-violet-"], [class^="text-purple-"], [class*=" text-purple-"], [class^="text-fuchsia-"], [class*=" text-fuchsia-"]) { color: var(--cg-public-soft) !important; }
+.cg-public-theme :is([class^="border-violet-"], [class*=" border-violet-"], [class^="border-purple-"], [class*=" border-purple-"], [class^="border-fuchsia-"], [class*=" border-fuchsia-"]) { border-color: rgba(94, 222, 249, .25) !important; }
+.cg-public-theme :is([class^="bg-violet-"], [class*=" bg-violet-"], [class^="bg-purple-"], [class*=" bg-purple-"], [class^="bg-fuchsia-"], [class*=" bg-fuchsia-"]) { background-color: rgba(21, 217, 255, .085) !important; }
+.cg-public-theme :is([class^="from-violet-"], [class*=" from-violet-"], [class^="from-purple-"], [class*=" from-purple-"], [class^="from-fuchsia-"], [class*=" from-fuchsia-"]) { --tw-gradient-from: rgba(11, 183, 218, .94) var(--tw-gradient-from-position) !important; --tw-gradient-to: rgba(11, 183, 218, 0) var(--tw-gradient-to-position) !important; }
+.cg-public-theme :is([class^="via-violet-"], [class*=" via-violet-"], [class^="via-purple-"], [class*=" via-purple-"], [class^="via-fuchsia-"], [class*=" via-fuchsia-"]) { --tw-gradient-via: rgba(39, 128, 222, .96) var(--tw-gradient-via-position) !important; --tw-gradient-to: rgba(39, 128, 222, 0) var(--tw-gradient-to-position) !important; }
+.cg-public-theme :is([class^="to-violet-"], [class*=" to-violet-"], [class^="to-purple-"], [class*=" to-purple-"], [class^="to-fuchsia-"], [class*=" to-fuchsia-"]) { --tw-gradient-to: rgba(103, 91, 240, .9) var(--tw-gradient-to-position) !important; }
+.cg-public-theme .section-kicker { border-color: rgba(94, 222, 249, .22); background: rgba(21,217,255,.055); color: var(--cg-cyan-soft); }
+.cg-public-header, .cg-pricing-page .cg-site-header { background-color: rgba(5,10,18,.84) !important; border-color: rgba(130,213,234,.15) !important; }
+.cg-auth-grid { background-image: linear-gradient(rgba(103,220,244,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(103,220,244,.03) 1px, transparent 1px); }
+.cg-auth-mark { background: linear-gradient(145deg, #11cfe9, #365edc 64%, #7654d9); box-shadow: 0 0 36px rgba(21,217,255,.24); }
+.cg-auth-page .cg-card { border-color: rgba(144,213,233,.14); background-image: linear-gradient(145deg, rgba(12,27,40,.97), rgba(7,16,25,.97)); }
+.cg-auth-page label > span { color: #d3e1e9; }
+.cg-legal-page { background-color: transparent; }
+.cg-legal-header { border-color: rgba(128,204,227,.15); }
+.cg-legal-page > section > div:last-child > section { border-color: rgba(128,204,227,.13); background-image: linear-gradient(145deg, rgba(13,28,42,.94), rgba(8,16,25,.96)); box-shadow: 0 18px 48px rgba(0,5,14,.18); backdrop-filter: blur(12px); }
+.cg-legal-page footer { border-color: rgba(128,204,227,.14); }
+.cg-pricing-page { background-color: transparent; }
+.cg-pricing-page [class~="ring-1"] { background-image: linear-gradient(145deg, rgba(16,54,76,.96), rgba(10,19,37,.97)); --tw-ring-color: rgba(80,213,245,.32); box-shadow: 0 24px 70px rgba(6,95,131,.2); }
+.cg-pricing-page button.bg-gradient-to-r { color: #04121b !important; }
+.cg-pricing-page select { color-scheme: dark; }
+.cg-site-shell--dashboard { --primary: 188 100% 50%; --accent-glow: 9, 201, 239; }
+.cg-site-shell--dashboard main.min-h-screen { background-color: var(--cg-bg); background-image: radial-gradient(ellipse 66% 36% at 48% -4%, rgba(9,201,239,.095), transparent 76%), radial-gradient(ellipse 34% 34% at 100% 46%, rgba(104,79,225,.055), transparent 78%); }
+.cg-site-shell--dashboard :is([class^="text-violet-"], [class*=" text-violet-"], [class^="text-purple-"], [class*=" text-purple-"], [class^="text-fuchsia-"], [class*=" text-fuchsia-"]) { color: var(--cg-cyan-soft) !important; }
+.cg-site-shell--dashboard :is([class^="border-violet-"], [class*=" border-violet-"], [class^="border-purple-"], [class*=" border-purple-"], [class^="border-fuchsia-"], [class*=" border-fuchsia-"]) { border-color: rgba(94, 222, 249, .2) !important; }
+.cg-site-shell--dashboard :is([class^="bg-violet-"], [class*=" bg-violet-"], [class^="bg-purple-"], [class*=" bg-purple-"], [class^="bg-fuchsia-"], [class*=" bg-fuchsia-"]) { background-color: rgba(21, 217, 255, .08) !important; }
+.cg-site-shell--dashboard :is([class^="from-violet-"], [class*=" from-violet-"], [class^="from-purple-"], [class*=" from-purple-"], [class^="from-fuchsia-"], [class*=" from-fuchsia-"]) { --tw-gradient-from: rgba(11, 183, 218, .88) var(--tw-gradient-from-position) !important; --tw-gradient-to: rgba(11, 183, 218, 0) var(--tw-gradient-to-position) !important; }
+.cg-site-shell--dashboard :is([class^="via-violet-"], [class*=" via-violet-"], [class^="via-purple-"], [class*=" via-purple-"], [class^="via-fuchsia-"], [class*=" via-fuchsia-"]) { --tw-gradient-via: rgba(39, 128, 222, .9) var(--tw-gradient-via-position) !important; --tw-gradient-to: rgba(39, 128, 222, 0) var(--tw-gradient-to-position) !important; }
+.cg-site-shell--dashboard .surface-glow { border-color: rgba(119,211,235,.15); background: linear-gradient(145deg, rgba(13,27,40,.94), rgba(8,17,27,.96)); box-shadow: 0 22px 70px rgba(0,5,14,.3); }
+@media (prefers-reduced-motion: reduce) {
+  .cg-auth-mark { box-shadow: none; }
 }
