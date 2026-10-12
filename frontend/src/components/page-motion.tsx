@@ -67,11 +67,13 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   useEffect(() => {
-    if (pathname !== "/" || prefersReducedMotion || window.matchMedia("(pointer: coarse)").matches) return;
+    const shell = rootRef.current;
+    if (!shell || pathname !== "/" || prefersReducedMotion || window.matchMedia("(pointer: coarse)").matches) return;
     let alive = true;
     let lenis: import("lenis").default | undefined;
     let ticker: ((time: number) => void) | undefined;
     let scrollTriggerModule: typeof import("gsap/ScrollTrigger").ScrollTrigger | undefined;
+    let mediaQueries: { add: (conditions: string, callback: () => void) => unknown; revert: () => void } | undefined;
 
     void Promise.all([import("lenis"), import("gsap"), import("gsap/ScrollTrigger")]).then(([lenisModule, gsapModule, triggerModule]) => {
       if (!alive) return;
@@ -84,6 +86,47 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
       gsap.ticker.add(ticker);
       gsap.ticker.lagSmoothing(0);
       scrollTriggerModule = ScrollTrigger;
+      mediaQueries = gsap.matchMedia();
+      mediaQueries.add("(min-width: 900px) and (min-height: 750px) and (prefers-reduced-motion: no-preference)", () => {
+        const stations = gsap.utils.toArray<HTMLElement>("[data-cg-workflow-station]", shell);
+        const workflowPin = shell.querySelector<HTMLElement>("[data-cg-workflow-pin]");
+        const workflowSection = shell.querySelector<HTMLElement>("[data-cg-workflow-section]");
+        if (workflowSection && workflowPin && stations.length === 3) {
+          const beam = shell.querySelector<SVGPathElement>("[data-cg-beam-path]");
+          const timeline = gsap.timeline({
+            scrollTrigger: { trigger: workflowSection, pin: workflowPin, start: "top top+=50", end: "+=980", scrub: 0.8, pinSpacing: true, invalidateOnRefresh: true },
+          });
+          timeline.fromTo(stations[0], { autoAlpha: 0.62, y: 24, scale: 0.96 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.3 }, 0)
+            .to(stations[0], { autoAlpha: 0.75, scale: 0.98, duration: 0.28 }, 0.38)
+            .fromTo(stations[1], { autoAlpha: 0.62, y: 24, scale: 0.96 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.34 }, 0.34)
+            .to(stations[1], { autoAlpha: 0.76, scale: 0.98, duration: 0.3 }, 0.7)
+            .fromTo(stations[2], { autoAlpha: 0.62, y: 24, scale: 0.96 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.34 }, 0.66);
+          if (beam) timeline.fromTo(beam, { strokeDashoffset: 100, autoAlpha: 0.35 }, { strokeDashoffset: 0, autoAlpha: 1, duration: 0.9 }, 0.06);
+        }
+
+        const workspace = shell.querySelector<HTMLElement>(".cg-workspace-section");
+        const workspacePin = shell.querySelector<HTMLElement>("[data-cg-workspace-pin]");
+        const viewport = shell.querySelector<HTMLElement>("[data-cg-workspace-viewport]");
+        const track = shell.querySelector<HTMLElement>("[data-cg-workspace-track]");
+        if (workspace && workspacePin && viewport && track) {
+          const horizontalDistance = () => Math.max(0, track.scrollWidth - viewport.clientWidth);
+          if (horizontalDistance() > 48) {
+            gsap.to(track, {
+              x: () => -horizontalDistance(),
+              ease: "none",
+              scrollTrigger: {
+                trigger: workspace,
+                pin: workspacePin,
+                start: "top top+=36",
+                end: () => `+=${horizontalDistance() + 620}`,
+                scrub: 0.85,
+                pinSpacing: true,
+                invalidateOnRefresh: true,
+              },
+            });
+          }
+        }
+      });
       ScrollTrigger.refresh();
     }).catch(() => {
       // Native browser scrolling remains available if an optional motion chunk fails to load.
@@ -94,6 +137,7 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
       if (ticker) {
         import("gsap").then(({ gsap }) => gsap.ticker.remove(ticker!));
       }
+      mediaQueries?.revert();
       lenis?.destroy();
       scrollTriggerModule?.getAll().forEach((trigger) => trigger.kill());
     };
@@ -145,9 +189,9 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
         <motion.div
           key={pathname}
           className="cg-page-content"
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={prefersReducedMotion ? undefined : { opacity: 0, y: -4 }}
+          initial={prefersReducedMotion ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={prefersReducedMotion ? undefined : { opacity: 0 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.28, ease: [0.2, 0.72, 0.22, 1] }}
         >
           {children}
