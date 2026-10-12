@@ -10,38 +10,14 @@ import { Input } from "@/components/ui/input";
 import { MotionToast } from "@/components/motion-toast";
 import { useAuth } from "@/components/auth-provider";
 import { api } from "@/lib/api";
+import { useCountUp } from "@/lib/motion/hooks";
 import type { Notification, Project, RuleSuppression, ScanComparison, Workspace } from "@/lib/types";
 
 const selectStyle = "h-10 w-full rounded-lg border border-white/[.08] bg-[#100d1c] px-3 text-[12px] text-zinc-200 outline-none transition focus:border-violet-400/35";
 
 function AnimatedCount({ value, resetKey }: { value: number; resetKey: string }) {
-  const [displayValue, setDisplayValue] = useState(0);
-  const currentValue = useRef(0);
-  const previousKey = useRef(resetKey);
-
-  useEffect(() => {
-    const from = previousKey.current === resetKey ? currentValue.current : 0;
-    previousKey.current = resetKey;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      currentValue.current = value;
-      setDisplayValue(value);
-      return;
-    }
-    const startedAt = performance.now();
-    let frame = 0;
-    const update = (now: number) => {
-      const progress = Math.min(1, (now - startedAt) / 440);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const next = Math.round(from + (value - from) * eased);
-      currentValue.current = next;
-      setDisplayValue(next);
-      if (progress < 1) frame = window.requestAnimationFrame(update);
-    };
-    frame = window.requestAnimationFrame(update);
-    return () => window.cancelAnimationFrame(frame);
-  }, [resetKey, value]);
-
-  return <span className="cg-count inline-block tabular-nums">{displayValue}</span>;
+  const count = useCountUp(value, { duration: "slow", resetKey });
+  return <span className="cg-count inline-block tabular-nums">{Math.round(count)}</span>;
 }
 
 export function ProjectCenter() {

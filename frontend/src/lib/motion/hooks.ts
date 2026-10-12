@@ -43,11 +43,13 @@ export function useMagnetic<T extends HTMLElement>(strength = 8) {
     element.style.setProperty("--cg-magnetic-x", `${x * strength * factor}px`);
     element.style.setProperty("--cg-magnetic-y", `${y * strength * factor}px`);
     element.dataset.magneticActive = "true";
+    element.dataset.active = "true";
   }, [effectiveIntensity, strength]);
   const onPointerLeave = useCallback((event: PointerEvent<T>) => {
     event.currentTarget.style.setProperty("--cg-magnetic-x", "0px");
     event.currentTarget.style.setProperty("--cg-magnetic-y", "0px");
     delete event.currentTarget.dataset.magneticActive;
+    delete event.currentTarget.dataset.active;
   }, []);
   return { onPointerMove, onPointerLeave };
 }
@@ -66,23 +68,35 @@ export function useTilt<T extends HTMLElement>(maxDegrees = 7) {
     surface.dataset.tiltActive = "true";
     surface.style.setProperty("--cg-pointer-x", `${event.clientX - bounds.left}px`);
     surface.style.setProperty("--cg-pointer-y", `${event.clientY - bounds.top}px`);
+    const card = surface.classList.contains("cg-tilt-card-inner") ? surface.parentElement : surface;
+    card?.style.setProperty("--cg-pointer-x", `${event.clientX - bounds.left}px`);
+    card?.style.setProperty("--cg-pointer-y", `${event.clientY - bounds.top}px`);
+    card?.classList.add("cg-pointer-active");
   }, [effectiveIntensity, maxDegrees]);
   const onPointerLeave = useCallback((event: PointerEvent<T>) => {
     event.currentTarget.style.setProperty("--cg-tilt-x", "0deg");
     event.currentTarget.style.setProperty("--cg-tilt-y", "0deg");
     delete event.currentTarget.dataset.tiltActive;
+    const card = event.currentTarget.classList.contains("cg-tilt-card-inner") ? event.currentTarget.parentElement : event.currentTarget;
+    card?.classList.remove("cg-pointer-active");
   }, []);
   return { onPointerMove, onPointerLeave };
 }
 
-export function useCountUp(target: number, options: { duration?: keyof typeof MOTION.duration; from?: number } = {}) {
+export function useCountUp(target: number, options: { duration?: keyof typeof MOTION.duration; from?: number; resetKey?: string } = {}) {
   const { effectiveIntensity } = useMotionSettings();
   const from = options.from ?? 0;
   const durationKey = options.duration ?? "slow";
+  const resetKey = options.resetKey;
   const [value, setValue] = useState(from);
+  const currentValue = useRef(from);
+  const previousResetKey = useRef(resetKey);
 
   useEffect(() => {
+    const start = resetKey !== undefined && previousResetKey.current !== resetKey ? from : currentValue.current;
+    previousResetKey.current = resetKey;
     if (effectiveIntensity === "minimal") {
+      currentValue.current = target;
       setValue(target);
       return;
     }
@@ -93,11 +107,13 @@ export function useCountUp(target: number, options: { duration?: keyof typeof MO
       if (startedAt === undefined) startedAt = time;
       const progress = Math.min(1, (time - startedAt) / (duration * 1000));
       const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(from + (target - from) * eased);
+      const next = start + (target - start) * eased;
+      currentValue.current = next;
+      setValue(next);
       if (progress >= 1) unsubscribe();
     });
     return unsubscribe;
-  }, [durationKey, effectiveIntensity, from, target]);
+  }, [durationKey, effectiveIntensity, from, resetKey, target]);
 
   return value;
 }

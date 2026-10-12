@@ -9,6 +9,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { MotionToast } from "@/components/motion-toast";
 import { api } from "@/lib/api";
+import { MOTION } from "@/lib/motion/tokens";
+import { useCountUp } from "@/lib/motion/hooks";
 import type { Finding, FixProposal, Scan, Workspace } from "@/lib/types";
 
 const extensions = ".py,.js,.jsx,.ts,.tsx,.java,.go,.cpp,.cc,.c,.h,.rs,.php,.rb,.cs,.kt,.swift,.vue,.sql,.sh,.yaml,.yml,.tf,.html,.css,.dockerfile,.json,.lock,.mod,.txt,.xml";
@@ -18,7 +20,7 @@ function dateLabel(value: string) {
   return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(value));
 }
 
-function FindingRow({ finding, active, onClick }: { finding: Finding; active: boolean; onClick: () => void }) {
+function FindingRow({ finding, active, onClick, index, total }: { finding: Finding; active: boolean; onClick: () => void; index?: number; total?: number }) {
   const colors: Record<string, string> = {
     critical: "border-rose-400/20 bg-rose-400/[.08] text-rose-200",
     high: "border-orange-300/20 bg-orange-300/[.07] text-orange-200",
@@ -26,48 +28,47 @@ function FindingRow({ finding, active, onClick }: { finding: Finding; active: bo
     low: "border-sky-300/20 bg-sky-300/[.06] text-sky-200",
     info: "border-white/10 bg-white/[.04] text-zinc-300",
   };
-  return <button onClick={onClick} className={`cg-finding-row relative w-full overflow-hidden rounded-xl border p-3.5 text-left transition ${active ? "cg-finding-row--active border-purple-400/20 bg-purple-400/[.035]" : "border-white/[.065] bg-white/[.015] hover:border-white/[.13] hover:bg-white/[.035]"}`}>
-    <div className="flex items-start gap-3"><span className={`mt-0.5 rounded-md border px-1.5 py-1 text-[9px] font-semibold uppercase tracking-[.08em] ${colors[finding.severity] || colors.info}`}>{finding.severity}</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] font-medium text-zinc-200"><span>{finding.title}</span>{finding.status !== "open" && <span className="cg-status-badge rounded border border-white/[.08] bg-white/[.025] px-1.5 py-0.5 text-[8px] uppercase tracking-wide text-zinc-500">{finding.status.replace("_", " ")}</span>}</div><div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-zinc-600"><span className="max-w-[180px] truncate font-mono text-zinc-400">{finding.file_path}</span><span>line {finding.line}</span><span>{finding.cwe}</span></div></div><ChevronRight size={14} className={`mt-1 shrink-0 ${active ? "text-purple-300" : "text-zinc-700"}`} /></div>
+  return <button onClick={onClick} aria-label={index !== undefined && total !== undefined ? `Finding ${index + 1} of ${total}: ${finding.title}, ${finding.severity}` : undefined} className={`cg-finding-row relative w-full overflow-hidden rounded-xl border p-3.5 text-left transition ${index !== undefined ? "cg-virtual-finding-row" : ""} ${active ? "cg-finding-row--active border-purple-400/20 bg-purple-400/[.035]" : "border-white/[.065] bg-white/[.015] hover:border-white/[.13] hover:bg-white/[.035]"}`}>
+    <div className="flex items-start gap-3"><span className={`cg-severity-badge cg-severity-${finding.severity} mt-0.5 rounded-md border px-1.5 py-1 text-[9px] font-semibold uppercase tracking-[.08em] ${colors[finding.severity] || colors.info}`}>{finding.severity}</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] font-medium text-zinc-200"><span className="cg-finding-title">{finding.title}</span>{finding.status !== "open" && <span className="cg-status-badge rounded border border-white/[.08] bg-white/[.025] px-1.5 py-0.5 text-[8px] uppercase tracking-wide text-zinc-500">{finding.status.replace("_", " ")}</span>}</div><div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-zinc-600"><span className="max-w-[180px] truncate font-mono text-zinc-400">{finding.file_path}</span><span>line {finding.line}</span><span>{finding.cwe}</span></div></div><ChevronRight size={14} className={`mt-1 shrink-0 ${active ? "text-purple-300" : "text-zinc-700"}`} /></div>
   </button>;
 }
 
 function AnimatedNumber({ value, resetKey, className = "" }: { value: number | null; resetKey: string; className?: string }) {
-  const [displayValue, setDisplayValue] = useState<number | null>(null);
-  const currentValue = useRef<number | null>(null);
-  const previousKey = useRef(resetKey);
+  const count = useCountUp(value ?? 0, { duration: "slow", resetKey });
+  return <span className={className}>{value === null ? "—" : Math.round(count)}</span>;
+}
+
+function FindingResults({ findings, selectedId, onSelect }: { findings: Finding[]; selectedId: string; onSelect: (finding: Finding) => void }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const rowHeight = 104;
+  const viewportHeight = 520;
+  const shouldVirtualize = findings.length > 40;
+  const firstVisible = shouldVirtualize ? Math.max(0, Math.floor(scrollTop / rowHeight) - 4) : 0;
+  const visibleCount = shouldVirtualize ? Math.ceil(viewportHeight / rowHeight) + 8 : findings.length;
+  const visibleFindings = shouldVirtualize ? findings.slice(firstVisible, firstVisible + visibleCount) : findings;
 
   useEffect(() => {
-    if (value === null) {
-      currentValue.current = null;
-      previousKey.current = resetKey;
-      setDisplayValue(null);
-      return;
-    }
+    setScrollTop(0);
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [findings]);
 
-    const from = previousKey.current !== resetKey || currentValue.current === null ? 0 : currentValue.current;
-    previousKey.current = resetKey;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      currentValue.current = value;
-      setDisplayValue(value);
-      return;
-    }
+  if (!shouldVirtualize) {
+    return <div className="finding-list space-y-2">{findings.map((finding) => <FindingRow key={finding.id} finding={finding} active={selectedId === finding.id} onClick={() => onSelect(finding)} />)}</div>;
+  }
 
-    const startedAt = performance.now();
-    const duration = 520;
-    let frame = 0;
-    const update = (now: number) => {
-      const progress = Math.min(1, (now - startedAt) / duration);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const next = Math.round(from + (value - from) * eased);
-      currentValue.current = next;
-      setDisplayValue(next);
-      if (progress < 1) frame = window.requestAnimationFrame(update);
-    };
-    frame = window.requestAnimationFrame(update);
-    return () => window.cancelAnimationFrame(frame);
-  }, [resetKey, value]);
-
-  return <span className={className}>{value === null ? "—" : displayValue ?? 0}</span>;
+  return (
+    <div ref={scrollRef} className="cg-virtual-findings" role="region" aria-label="Security findings. Scroll to review the full list." onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}>
+      <div className="cg-virtual-findings__spacer" style={{ height: findings.length * rowHeight }}>
+        {visibleFindings.map((finding, localIndex) => {
+          const index = firstVisible + localIndex;
+          return <div key={finding.id} className="cg-virtual-findings__item" style={{ height: rowHeight, transform: `translateY(${index * rowHeight}px)` }}>
+            <FindingRow index={index} total={findings.length} finding={finding} active={selectedId === finding.id} onClick={() => onSelect(finding)} />
+          </div>;
+        })}
+      </div>
+    </div>
+  );
 }
 
 export function Dashboard() {
@@ -88,6 +89,8 @@ export function Dashboard() {
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [severity, setSeverity] = useState("all");
+  const [appliedQuery, setAppliedQuery] = useState("");
+  const [appliedSeverity, setAppliedSeverity] = useState("all");
   const [toast, setToast] = useState("");
   const [fixing, setFixing] = useState(false);
   const [fixProposal, setFixProposal] = useState<FixProposal | null>(null);
@@ -139,14 +142,18 @@ export function Dashboard() {
 
   const selectedScan = scans.find((scan) => scan.id === selectedId) || null;
   const allFindings = selectedScan?.findings ?? EMPTY_FINDINGS;
+  useEffect(() => {
+    const timeout = window.setTimeout(() => { setAppliedQuery(query); setAppliedSeverity(severity); }, MOTION.duration.fast * 1000);
+    return () => window.clearTimeout(timeout);
+  }, [query, severity]);
   const filteredFindings = useMemo(() => allFindings.filter((finding) => {
-    const search = query.trim().toLowerCase();
+    const search = appliedQuery.trim().toLowerCase();
     const matchesSearch = !search || [finding.title, finding.file_path, finding.description, finding.cwe].some((part) => part.toLowerCase().includes(search));
-    return matchesSearch && (severity === "all" || finding.severity === severity);
+    return matchesSearch && (appliedSeverity === "all" || finding.severity === appliedSeverity);
   }).sort((left, right) => {
     const priority: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
     return (priority[left.severity] ?? 5) - (priority[right.severity] ?? 5);
-  }), [allFindings, query, severity]);
+  }), [allFindings, appliedQuery, appliedSeverity]);
   const selectedFinding = filteredFindings.find((finding) => finding.id === selectedFindingId) || filteredFindings[0] || null;
   const selectedWorkspace = workspaces.find((workspace) => workspace.id === selectedScan?.workspace_id) || null;
   const canTriage = !selectedScan?.workspace_id || (!!selectedWorkspace && selectedWorkspace.role !== "viewer");
@@ -358,7 +365,7 @@ export function Dashboard() {
             <div className="flex flex-col justify-between gap-3 border-b border-white/[.065] px-4 py-4 sm:flex-row sm:items-center sm:px-5"><div><div className="flex items-center gap-2 text-[13px] font-medium text-zinc-200"><ShieldCheck size={14} className="text-purple-300" /> Latest review</div><div className="mt-1 text-[11px] text-zinc-600">{selectedScan ? <>{selectedScan.title} <span className="px-1">·</span> {selectedScan.file_count} files <span className="px-1">·</span> {dateLabel(selectedScan.created_at)}</> : "Select source code to create your first review"}</div></div><div className="flex items-center gap-2"><div className="relative min-w-0 flex-1 sm:w-[175px]"><Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-600"/><Input value={query} onChange={(event) => setQuery(event.target.value)} className="h-8 border-white/[.07] bg-white/[.02] pl-8 text-[11px]" placeholder="Search findings" /></div><div className="relative"><Filter size={12} className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-zinc-600"/><select value={severity} onChange={(event) => setSeverity(event.target.value)} className="h-8 appearance-none rounded-lg border border-white/[.07] bg-[#120f20] pl-7 pr-6 text-[10px] text-zinc-400 outline-none focus:border-purple-400/30"><option value="all">All</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select><ChevronDown size={11} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-zinc-600"/></div></div></div>
             <div className="min-h-[290px] p-4 sm:p-5">
               {selectedScan && <div className="mb-3 flex justify-end"><a href={`/api/core/scans/${encodeURIComponent(selectedScan.id)}/sarif`} className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-white/[.08] px-2.5 text-[10px] text-zinc-400 transition hover:border-violet-300/20 hover:bg-violet-300/[.04] hover:text-violet-100"><ArrowDownToLine size={11}/> Export SARIF</a></div>}
-              {loadingScans ? <div className="space-y-3">{[1,2,3].map((row) => <div key={row} className="h-[66px] animate-pulse rounded-xl bg-white/[.035]" />)}</div> : !selectedScan ? <div className="flex min-h-[270px] flex-col items-center justify-center text-center"><div className="grid size-12 place-items-center rounded-2xl border border-white/[.08] bg-white/[.025] text-zinc-500"><FileCode2 size={19}/></div><div className="mt-4 text-[13px] font-medium text-zinc-300">Your first review starts here</div><p className="mt-1.5 max-w-[300px] text-[11px] leading-5 text-zinc-600">Upload a few source files to check for common security risks. Source is analyzed in memory.</p><Button onClick={() => inputRef.current?.click()} size="sm" className="mt-4 h-8"><FileUp size={13}/> Choose files</Button><a href="/dashboard/projects" className="mt-3 text-[10px] text-violet-200 hover:text-white">Connect a repository</a></div> : allFindings.length === 0 ? <div className="flex min-h-[260px] flex-col items-center justify-center text-center"><span className="grid size-10 place-items-center rounded-xl border border-purple-400/15 bg-purple-400/[.06] text-purple-300"><Check size={17}/></span><div className="mt-3 text-[13px] font-medium text-zinc-200">No findings from this review</div><p className="mt-1 text-[11px] text-zinc-600">The source and dependency checks did not flag a supported pattern.</p></div> : filteredFindings.length === 0 ? <div className="grid min-h-[220px] place-items-center text-[12px] text-zinc-600">No findings match these filters.</div> : <div className="finding-list space-y-2">{filteredFindings.map((finding) => <FindingRow key={finding.id} finding={finding} active={selectedFinding?.id === finding.id} onClick={() => { setSelectedFindingId(finding.id); setFixProposal(null); setFixError(""); }} />)}</div>}
+              {loadingScans ? <div className="cg-skeleton-list space-y-3" aria-label="Loading findings">{[1,2,3].map((row) => <div key={row} className="cg-skeleton-row h-[66px] rounded-xl bg-white/[.035]" />)}</div> : !selectedScan ? <div className="flex min-h-[270px] flex-col items-center justify-center text-center"><div className="grid size-12 place-items-center rounded-2xl border border-white/[.08] bg-white/[.025] text-zinc-500"><FileCode2 size={19}/></div><div className="mt-4 text-[13px] font-medium text-zinc-300">Your first review starts here</div><p className="mt-1.5 max-w-[300px] text-[11px] leading-5 text-zinc-600">Upload a few source files to check for common security risks. Source is analyzed in memory.</p><Button onClick={() => inputRef.current?.click()} size="sm" className="mt-4 h-8"><FileUp size={13}/> Choose files</Button><a href="/dashboard/projects" className="mt-3 text-[10px] text-violet-200 hover:text-white">Connect a repository</a></div> : allFindings.length === 0 ? <div className="flex min-h-[260px] flex-col items-center justify-center text-center"><span className="grid size-10 place-items-center rounded-xl border border-purple-400/15 bg-purple-400/[.06] text-purple-300"><Check size={17}/></span><div className="mt-3 text-[13px] font-medium text-zinc-200">No findings from this review</div><p className="mt-1 text-[11px] text-zinc-600">The source and dependency checks did not flag a supported pattern.</p></div> : filteredFindings.length === 0 ? <div className="grid min-h-[220px] place-items-center text-[12px] text-zinc-600">No findings match these filters.</div> : <FindingResults findings={filteredFindings} selectedId={selectedFinding?.id ?? ""} onSelect={(finding) => { setSelectedFindingId(finding.id); setFixProposal(null); setFixError(""); }} />}
             </div>
             {selectedScan && <div className="flex items-center justify-between border-t border-white/[.065] px-4 py-3 text-[10px] text-zinc-600 sm:px-5"><span>Showing {filteredFindings.length} of {allFindings.length} findings</span>{(!selectedScan.workspace_id || selectedWorkspace?.role === "owner" || selectedWorkspace?.role === "admin") && <button onClick={() => void deleteSelected()} className="flex items-center gap-1.5 rounded-md px-2 py-1 text-zinc-600 transition hover:bg-rose-300/[.06] hover:text-rose-200"><Trash2 size={11}/> Delete review</button>}</div>}
           </Card>
