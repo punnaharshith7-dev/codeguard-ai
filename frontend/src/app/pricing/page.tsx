@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -18,6 +19,7 @@ import {
   Zap 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/components/auth-provider";
 
 type BillingCycle = "monthly" | "yearly";
 type CurrencyCode = "INR" | "USD" | "EUR" | "GBP" | "AED";
@@ -122,6 +124,8 @@ const PLANS: PlanTier[] = [
 ];
 
 export default function PricingPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [billing, setBilling] = useState<BillingCycle>("yearly");
   const [currency, setCurrency] = useState<CurrencyCode>("INR");
   const [autoPayEnabled, setAutoPayEnabled] = useState<boolean>(true);
@@ -152,6 +156,7 @@ export default function PricingPage() {
     script.async = true;
     script.onload = () => {
       if (!(window as any).Razorpay) {
+        setLoadingPlan(null);
         alert("Razorpay checkout failed to load. Please check your internet connection.");
         return;
       }
@@ -163,6 +168,7 @@ export default function PricingPage() {
         description: `${plan.name} (${billing === "monthly" ? "Monthly" : "Annual"} ${autoPayEnabled ? "Subscription" : "Plan"})`,
         image: "https://codeguard-ai-delta.vercel.app/favicon.ico",
         handler: function (response: any) {
+          setLoadingPlan(null);
           alert(`Payment Successful! Payment ID: ${response.razorpay_payment_id}. Your tokens have been credited.`);
         },
         prefill: {
@@ -180,8 +186,23 @@ export default function PricingPage() {
       };
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
+      setLoadingPlan(null);
+    };
+    script.onerror = () => {
+      setLoadingPlan(null);
+      alert("Razorpay checkout failed to load. Please check your internet connection.");
     };
     document.body.appendChild(script);
+  };
+
+  const handlePayNow = (plan: PlanTier) => {
+    if (authLoading) return;
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    setLoadingPlan(plan.id);
+    handleCheckout(plan);
   };
 
   return (
@@ -366,10 +387,9 @@ export default function PricingPage() {
                 {/* Call To Action Button */}
                 <div className="mt-8 pt-4 border-t border-white/[.06]">
                   <Button
-                    onClick={() => {
-                      setLoadingPlan(plan.id);
-                      handleCheckout(plan);
-                    }}
+                    onClick={() => handlePayNow(plan)}
+                    disabled={authLoading || loadingPlan !== null}
+                    loading={loadingPlan === plan.id}
                     size="lg"
                     className={`w-full h-12 rounded-xl text-[14px] font-semibold transition-all ${
                       isHighlight
