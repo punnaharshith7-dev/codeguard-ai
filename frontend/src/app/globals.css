@@ -239,6 +239,10 @@ button:active:not(:disabled) { transform: scale(.985); }
 .cg-hero-title-line--accent .cg-hero-letter { background: linear-gradient(105deg, #b7f4ff 5%, #17d8ff 44%, #a28aff 91%); background-clip: text; -webkit-background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
 .cg-hero-letter { display: inline-block; opacity: 0; animation: cg-letter-in var(--cg-motion-cinematic) var(--cg-motion-ease-enter) both; }
 .cg-hero-title-line--accent .cg-hero-letter { text-shadow: 0 0 24px rgba(21, 217, 255, .13); }
+@media (max-width: 720px), (pointer: coarse) {
+  .cg-hero-letter { animation-duration: var(--cg-motion-base); animation-delay: 0ms !important; }
+  .cg-hero-title-line::after { animation: none; }
+}
 .cg-cta-primary { position: relative; isolation: isolate; background: linear-gradient(110deg, #10bbda, #2678e9 60%, #7562ed); box-shadow: 0 9px 30px rgba(9, 176, 224, .27), inset 0 1px rgba(255,255,255,.18); animation: cg-cta-breathe 3.8s ease-in-out infinite; }
 .cg-cta-primary:hover { filter: brightness(1.12); box-shadow: 0 12px 38px rgba(9, 195, 242, .34); }
 .cg-cta-secondary { border-color: rgba(106, 225, 247, .24) !important; color: #d8f7ff !important; }
