@@ -4,32 +4,74 @@
 
 :root {
   color-scheme: dark;
-  --background: 252 48% 5%;
+  --background: 220 52% 5%;
   --foreground: 255 20% 96%;
-  --card: 252 32% 9%;
-  --border: 258 30% 80% / .12;
-  --muted: 252 8% 58%;
-  --primary: 278 100% 58%;
-  --accent-glow: 125, 45, 238;
+  --card: 222 38% 9%;
+  --border: 194 80% 82% / .14;
+  --muted: 214 12% 60%;
+  --primary: 188 100% 50%;
+  --accent-glow: 9, 201, 239;
+  --cg-bg: #050a12;
+  --cg-surface: #0b1420;
+  --cg-surface-raised: #101d2a;
+  --cg-cyan: #15d9ff;
+  --cg-cyan-soft: #a3f1ff;
+  --cg-violet: #9873ff;
+  --cg-secure: #38e8ad;
+  --cg-risk: #ff657f;
+  --cg-amber: #ffbd67;
+  --cg-text: #edf7ff;
+  --cg-muted: #91a4b6;
+  --cg-line: rgba(172, 222, 243, .11);
+  --cg-glass: rgba(8, 17, 27, .76);
+  --cg-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: auto; }
 body {
   margin: 0;
-  background: #080713;
-  color: #f7f5ff;
+  background: var(--cg-bg);
+  color: var(--cg-text);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 main.min-h-screen {
   background-image:
-    radial-gradient(ellipse 68% 34% at 50% -5%, rgba(var(--accent-glow), .2), transparent 74%),
-    radial-gradient(ellipse 42% 28% at 100% 38%, rgba(205, 60, 255, .055), transparent 78%);
-  background-attachment: fixed;
+    radial-gradient(ellipse 68% 34% at 50% -5%, rgba(var(--accent-glow), .12), transparent 74%),
+    radial-gradient(ellipse 42% 28% at 100% 38%, rgba(126, 82, 255, .075), transparent 78%);
 }
-::selection { background: rgba(177, 54, 255, .32); color: white; }
+::selection { background: rgba(21, 217, 255, .28); color: white; }
 button, a, input { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--cg-cyan);
+  outline-offset: 3px;
+}
+.cg-site-shell { position: relative; isolation: isolate; min-height: 100vh; overflow-x: clip; }
+.cg-page-content { position: relative; z-index: 1; min-height: 100vh; }
+.cg-scene-layer, .cg-dashboard-ambient { position: fixed; z-index: 0; inset: 0; overflow: hidden; pointer-events: none; }
+.cg-scene-loading {
+  position: absolute;
+  inset: -10%;
+  background:
+    radial-gradient(ellipse 42% 50% at 76% 34%, rgba(14, 171, 210, .085), transparent 74%),
+    radial-gradient(ellipse 32% 46% at 88% 52%, rgba(114, 73, 212, .09), transparent 72%);
+}
+.cg-scene-canvas-host, .cg-scene-canvas-host > div, .cg-scene-canvas-host canvas { position: absolute !important; inset: 0; width: 100% !important; height: 100% !important; }
+.cg-scene-canvas-host canvas { display: block; pointer-events: none; }
+.cg-dashboard-ambient {
+  background:
+    radial-gradient(ellipse 38% 42% at 89% 2%, rgba(9, 201, 239, .045), transparent 72%),
+    radial-gradient(ellipse 30% 36% at 0% 78%, rgba(126, 82, 255, .035), transparent 74%);
+}
+.cg-scroll-progress { position: fixed; z-index: 80; inset: 0 0 auto; height: 2px; transform: scaleX(0); transform-origin: left center; background: linear-gradient(90deg, var(--cg-cyan), var(--cg-violet) 74%, var(--cg-secure)); box-shadow: 0 0 16px rgba(21, 217, 255, .58); pointer-events: none; }
+.cg-custom-cursor { position: fixed; z-index: 90; top: -10px; left: -10px; border-radius: 50%; pointer-events: none; will-change: transform; }
+.cg-custom-cursor--dot { width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; background: var(--cg-cyan-soft); box-shadow: 0 0 14px rgba(21, 217, 255, .9); }
+.cg-custom-cursor--trail { width: 28px; height: 28px; margin: -14px 0 0 -14px; border: 1px solid rgba(111, 225, 255, .45); background: rgba(21, 217, 255, .035); transition: border-color 180ms ease, background-color 180ms ease; }
+.cg-site-shell:has(a:hover) .cg-custom-cursor--trail, .cg-site-shell:has(button:hover) .cg-custom-cursor--trail { border-color: rgba(152, 115, 255, .78); background: rgba(152, 115, 255, .1); }
+.cg-nav--compact > div { height: 60px !important; }
+.cg-nav--compact { background-color: rgba(5, 10, 18, .88) !important; border-color: rgba(21, 217, 255, .14) !important; }
+.cg-scene-layer, .cg-dashboard-ambient { contain: strict; }
 .grid-noise {
   background-image: linear-gradient(rgba(205,185,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(205,185,255,.025) 1px, transparent 1px);
   background-size: 58px 58px;
