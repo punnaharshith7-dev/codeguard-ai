@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Activity, ArrowDown, ArrowRight, ArrowUpRight, Bot, Braces, Check, ChevronDown, CircleDot, FileCode2, Github, LockKeyhole, ScanLine, Shield, ShieldCheck, Sparkles, TerminalSquare, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HeroHeadline } from "@/components/hero-headline";
+import { MagneticLink } from "@/components/magnetic-link";
 
 const featureCards = [
   { icon: ScanLine, title: "Find risks in code and infrastructure", text: "Review source, dependencies, Terraform, Docker, and Kubernetes with findings tied to exact lines.", href: "/register" },
@@ -25,20 +27,20 @@ const faqs = [
 
 export default function HomePage() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#080713] text-white">
+    <main className="cg-landing relative min-h-screen text-white">
       <div aria-hidden className="cg-aurora pointer-events-none absolute inset-x-0 top-0 h-[760px] bg-[radial-gradient(ellipse_54%_58%_at_50%_0%,rgba(106,33,220,.38),transparent_78%)]" />
       <div aria-hidden className="cg-grid-drift grid-noise pointer-events-none absolute inset-x-0 top-0 h-[780px] opacity-30" />
 
-      <header className="sticky top-0 z-30 border-b border-white/[.055] bg-[#080713]/70 backdrop-blur-2xl">
+      <header data-cg-header className="cg-site-header sticky top-0 z-30 border-b border-white/[.055] bg-[#080713]/70 backdrop-blur-2xl">
         <div className="cg-drop mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 sm:px-8">
           <Link href="/" className="flex items-center gap-2.5" aria-label="CodeGuard AI home">
-            <span className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-violet-700 text-white shadow-[0_0_26px_rgba(161,0,247,.36)]"><Shield size={18} strokeWidth={2.3} /></span>
-            <span className="text-[15px] font-semibold tracking-[-.04em]">codeguard<span className="text-fuchsia-400">.</span>ai</span>
+            <span className="cg-brand-mark grid size-9 place-items-center rounded-xl text-white"><Shield size={18} strokeWidth={2.3} /></span>
+            <span className="text-[15px] font-semibold tracking-[-.04em]">codeguard<span className="text-cyan-300">.</span>ai</span>
           </Link>
           <nav className="hidden items-center gap-8 text-[13px] font-medium text-zinc-300 md:flex">
             <a href="#features" className="transition hover:text-white">Platform</a>
             <a href="#workflow" className="transition hover:text-white">How it works</a>
-            <Link href="/pricing" className="text-violet-200 transition hover:text-white flex items-center gap-1 font-semibold">Pricing <span className="rounded-full bg-violet-400/20 px-1.5 py-0.2 text-[9px] text-fuchsia-300 border border-fuchsia-400/30">Plans</span></Link>
+            <Link href="/pricing" className="text-cyan-100 transition hover:text-white flex items-center gap-1 font-semibold">Pricing <span className="rounded-full bg-cyan-400/10 px-1.5 py-0.2 text-[9px] text-cyan-200 border border-cyan-300/25">Plans</span></Link>
             <a href="#faq" className="transition hover:text-white">FAQ</a>
             <Link href="/privacy" className="transition hover:text-white">Privacy</Link>
           </nav>
@@ -49,19 +51,16 @@ export default function HomePage() {
         </div>
       </header>
 
-      <section className="relative mx-auto flex max-w-6xl flex-col items-center px-5 pb-16 pt-20 text-center sm:px-8 sm:pt-28 lg:pt-32">
-        <div className="cg-drop mb-7 inline-flex items-center gap-2 rounded-full border border-violet-300/20 bg-white/[.055] px-3.5 py-1.5 text-[11px] font-medium text-violet-100 shadow-[0_0_36px_rgba(119,45,229,.15)]">
-          <span className="grid size-5 place-items-center rounded-full bg-violet-500/25 text-violet-200"><ShieldCheck size={12} /></span>
+      <section className="cg-hero relative mx-auto flex max-w-6xl flex-col items-center px-5 pb-16 pt-20 text-center sm:px-8 sm:pt-28 lg:pt-32">
+        <div className="cg-drop cg-signal-chip mb-7 inline-flex items-center gap-2 rounded-full border border-violet-300/20 bg-white/[.055] px-3.5 py-1.5 text-[11px] font-medium text-violet-100 shadow-[0_0_36px_rgba(119,45,229,.15)]">
+          <span className="cg-signal-dot grid size-5 place-items-center rounded-full bg-violet-500/25 text-violet-200"><ShieldCheck size={12} /></span>
           A calmer way to secure every release
         </div>
-        <h1 className="cg-drop cg-drop--delay-1 max-w-5xl text-[clamp(3.15rem,8vw,6.35rem)] font-semibold leading-[.99] tracking-[-.075em] text-[#fbf9ff]">
-          Find risk early.<br />
-          <span className="bg-gradient-to-r from-violet-200 via-fuchsia-300 to-purple-300 bg-clip-text text-transparent">Ship with confidence.</span>
-        </h1>
+        <HeroHeadline />
         <p className="cg-drop cg-drop--delay-2 mt-6 max-w-[660px] text-[15px] leading-7 text-zinc-300 sm:text-[17px] sm:leading-8">CodeGuard brings security reviews, understandable findings, and AI-assisted fixes into one thoughtful workflow for your codebase.</p>
         <div className="cg-drop cg-drop--delay-3 mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link href="/register"><Button size="lg" className="h-12 rounded-lg px-6">Start a free review <ArrowRight size={16} /></Button></Link>
-          <a href="#workflow"><Button size="lg" variant="outline" className="h-12 rounded-lg border-violet-200/20 bg-white/[.035] px-6 hover:border-violet-200/40 hover:bg-white/[.07]">See how it works <ArrowDown size={15} /></Button></a>
+          <MagneticLink strength={9}><Link href="/register"><Button size="lg" className="cg-cta-primary h-12 rounded-lg px-6">Start a free review <ArrowRight size={16} /></Button></Link></MagneticLink>
+          <MagneticLink strength={6}><a href="#workflow"><Button size="lg" variant="outline" className="cg-cta-secondary h-12 rounded-lg border-violet-200/20 bg-white/[.035] px-6 hover:border-violet-200/40 hover:bg-white/[.07]">See how it works <ArrowDown size={15} /></Button></a></MagneticLink>
         </div>
         <div data-scroll-reveal="fade" className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-zinc-400">
           <span className="flex items-center gap-1.5"><LockKeyhole size={12} className="text-violet-300" /> Private by default</span>
@@ -71,9 +70,9 @@ export default function HomePage() {
           <span>Review every proposed change</span>
         </div>
 
-        <div className="cg-preview relative mt-16 w-full max-w-[940px] text-left sm:mt-20">
+        <div className="cg-preview cg-review-float relative mt-16 w-full max-w-[940px] text-left sm:mt-20">
           <div aria-hidden className="absolute -inset-8 rounded-[48px] bg-violet-600/[.13] blur-[70px]" />
-          <div className="relative overflow-hidden rounded-[24px] border border-violet-100/[.13] bg-[#0c0a18]/90 shadow-[0_36px_130px_rgba(0,0,0,.54)] backdrop-blur-xl">
+          <div className="cg-review-window relative overflow-hidden rounded-[24px] border border-violet-100/[.13] bg-[#0c0a18]/90 shadow-[0_36px_130px_rgba(0,0,0,.54)] backdrop-blur-xl">
             <div className="flex items-center justify-between border-b border-white/[.08] px-4 py-3.5 sm:px-6">
               <div className="flex items-center gap-3"><span className="grid size-8 place-items-center rounded-lg bg-violet-500/15 text-violet-200"><ShieldCheck size={16} /></span><span><span className="block text-[12px] font-semibold text-white">Example security review</span><span className="mt-0.5 block text-[10px] text-zinc-500">A finding with context, evidence, and a next step</span></span></div>
               <span className="flex items-center gap-1.5 rounded-full border border-violet-300/15 bg-violet-300/[.06] px-2.5 py-1 text-[9px] font-medium text-violet-200"><CircleDot size={10} /> Preview</span>
@@ -81,12 +80,12 @@ export default function HomePage() {
             <div className="relative grid gap-4 p-4 sm:grid-cols-[1.2fr_.8fr] sm:p-6">
               <svg aria-hidden viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 z-10 hidden h-full w-full sm:block"><path className="cg-connector-path" d="M 53 51 C 62 51, 58 27, 68 27" fill="none" stroke="rgba(196,181,253,.75)" strokeWidth=".32" strokeDasharray="100" strokeDashoffset="100"/><circle className="cg-connector-dot" cx="68" cy="27" r=".9" fill="#ddd6fe"/></svg>
               <div className="cg-code-scan overflow-hidden rounded-2xl border border-white/[.075] bg-[#080713]">
-                <div className="flex items-center justify-between border-b border-white/[.07] px-4 py-3"><span className="flex items-center gap-2 text-[10px] text-zinc-400"><FileCode2 size={13} /> src/auth/session.ts</span><span className="text-[9px] text-zinc-600">line 42</span></div>
-                <div className="space-y-1.5 p-4 font-mono text-[10px] leading-6 text-zinc-500 sm:text-[11px]"><div><span className="text-violet-300">export async function</span> <span className="text-sky-200">getSession</span>(req) {'{'}</div><div className="pl-4"><span className="text-violet-300">const</span> token = req.cookies.get(</div><div className="pl-8 text-zinc-400">&quot;session&quot;);</div><div className="cg-preview-line -mx-2 rounded-lg border-l-2 border-amber-300/70 bg-amber-300/[.075] px-2 text-amber-100"><span className="text-violet-300">return</span> verifyToken(token);</div><div className="pl-4">{'}'}</div></div>
+                <div className="flex items-center justify-between border-b border-white/[.07] px-4 py-3"><span className="flex items-center gap-2 text-[10px] text-zinc-400"><FileCode2 size={13} /> src/auth/session.ts</span><span className="cg-line-label text-[9px] text-zinc-600">line 42 <i aria-hidden="true" /></span></div>
+                <div className="cg-review-code space-y-1.5 p-4 font-mono text-[10px] leading-6 text-zinc-500 sm:text-[11px]"><div><span className="text-violet-300">export async function</span> <span className="text-sky-200">getSession</span>(req) {'{'}</div><div className="pl-4"><span className="text-violet-300">const</span> token = req.cookies.get(</div><div className="pl-8 text-zinc-400">&quot;session&quot;);</div><div className="cg-preview-line -mx-2 rounded-lg border-l-2 border-amber-300/70 bg-amber-300/[.075] px-2 text-amber-100"><span className="text-violet-300">return</span> verifyToken(token);</div><div className="cg-review-diff" aria-hidden="true"><span>- verifyToken(token)</span><span>+ verifyToken(token, {"{"} issuer, audience {"}"})</span></div><div className="pl-4">{'}'}</div></div>
               </div>
               <div className="flex flex-col gap-3">
-                <div className="cg-preview-finding rounded-2xl border border-amber-300/20 bg-gradient-to-br from-amber-300/[.1] to-orange-400/[.035] p-4"><div className="flex items-center justify-between"><span className="text-[9px] font-semibold uppercase tracking-[.14em] text-amber-200">Needs review</span><span className="rounded-full border border-amber-200/20 px-2 py-0.5 text-[8px] text-amber-100">Example</span></div><div className="mt-3 text-[13px] font-semibold text-white">Token validation</div><p className="mt-2 text-[10px] leading-5 text-zinc-400">Validate the issuer and audience before trusting a token.</p><div className="mt-3 inline-flex items-center gap-1 rounded-md bg-black/20 px-2 py-1 text-[9px] text-zinc-400">CWE-347 <ArrowUpRight size={10} /></div></div>
-                <div className="cg-preview-next flex-1 rounded-2xl border border-white/[.07] bg-white/[.025] p-4"><div className="flex items-center justify-between text-[9px] uppercase tracking-[.13em] text-zinc-500"><span>Review flow</span><Activity size={12} className="text-violet-300" /></div><div className="mt-4 space-y-3">{["Understand the evidence", "Generate a proposed patch", "Review before applying"].map((item, index) => <div key={item} className="flex items-center gap-2.5 text-[10px] text-zinc-300"><span className={`grid size-5 place-items-center rounded-full ${index === 0 ? "bg-violet-500/20 text-violet-200" : "bg-white/[.06] text-zinc-500"}`}>{index === 0 ? <Check size={11} /> : index + 1}</span>{item}</div>)}</div></div>
+                <div className="cg-preview-finding rounded-2xl border border-amber-300/20 bg-gradient-to-br from-amber-300/[.1] to-orange-400/[.035] p-4"><div className="cg-review-status-row flex items-center justify-between"><span className="sr-only">Needs review</span><span aria-hidden="true" className="cg-review-status cg-review-status--risk text-[9px] font-semibold uppercase tracking-[.14em]">Needs review</span><span aria-hidden="true" className="cg-review-status cg-review-status--fixed text-[9px] font-semibold uppercase tracking-[.14em]">Fixed</span><span className="rounded-full border border-amber-200/20 px-2 py-0.5 text-[8px] text-amber-100">Example</span></div><div className="mt-3 text-[13px] font-semibold text-white">Token validation</div><p className="mt-2 text-[10px] leading-5 text-zinc-400">Validate the issuer and audience before trusting a token.</p><div className="cg-review-diff mt-3" aria-hidden="true"><span>- unchecked token</span><span>+ issuer + audience verified</span></div><div className="mt-3 inline-flex items-center gap-1 rounded-md bg-black/20 px-2 py-1 text-[9px] text-zinc-400">CWE-347 <ArrowUpRight size={10} /></div></div>
+                <div className="cg-preview-next flex-1 rounded-2xl border border-white/[.07] bg-white/[.025] p-4"><div className="flex items-center justify-between text-[9px] uppercase tracking-[.13em] text-zinc-500"><span>Review flow</span><Activity size={12} className="text-violet-300" /></div><div className="mt-4 space-y-3">{["Understand the evidence", "Generate a proposed patch", "Review before applying"].map((item, index) => <div key={item} className={`cg-review-step cg-review-step--${index + 1} flex items-center gap-2.5 text-[10px] text-zinc-300`}><span className={`grid size-5 place-items-center rounded-full ${index === 0 ? "bg-violet-500/20 text-violet-200" : "bg-white/[.06] text-zinc-500"}`}>{index === 0 ? <Check size={11} /> : index + 1}</span>{item}</div>)}</div></div>
               </div>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[.07] px-4 py-3 text-[10px] text-zinc-500 sm:px-6"><span className="flex items-center gap-2"><Github size={12} /> Works with your GitHub workflow</span><Link href="/register" className="flex items-center gap-1 text-violet-200 transition hover:text-white">Explore CodeGuard <ArrowUpRight size={12} /></Link></div>

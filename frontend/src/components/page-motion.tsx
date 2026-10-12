@@ -136,7 +136,7 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
 
   return (
     <div ref={rootRef} className={`cg-site-shell${isDashboard ? " cg-site-shell--dashboard" : ""}`}>
-      {showPublicScene && <AmbientScene />}
+      {showPublicScene && <AmbientScene mode={pathname === "/" ? "hero" : "ambient"} />}
       {isDashboard && <div aria-hidden="true" className="cg-dashboard-ambient" />}
       <div className="cg-scroll-progress" data-cg-scroll-progress aria-hidden="true" />
       <div className="cg-custom-cursor cg-custom-cursor--trail" data-cg-cursor-trail aria-hidden="true" />
