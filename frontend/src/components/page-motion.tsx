@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { AmbientScene } from "@/components/ambient-scene";
+import { MotionTools } from "@/components/motion-tools";
 
 const dashboardRoute = (pathname: string) => pathname.startsWith("/dashboard");
 const publicSceneRoutes = new Set(["/", "/pricing", "/login", "/register", "/forgot-password", "/reset-password", "/privacy", "/terms"]);
@@ -185,6 +186,7 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
       <div className="cg-scroll-progress" data-cg-scroll-progress aria-hidden="true" />
       <div className="cg-custom-cursor cg-custom-cursor--trail" data-cg-cursor-trail aria-hidden="true" />
       <div className="cg-custom-cursor cg-custom-cursor--dot" data-cg-cursor-dot aria-hidden="true" />
+      <MotionTools />
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={pathname}
