@@ -5,6 +5,7 @@ import { HeroHeadline } from "@/components/hero-headline";
 import { MagneticLink } from "@/components/magnetic-link";
 import { TiltCard } from "@/components/tilt-card";
 import { TechMarquee } from "@/components/tech-marquee";
+import { ScaleTelemetry } from "@/components/scale-telemetry";
 
 const featureCards = [
   { icon: ScanLine, title: "Find risks in code and infrastructure", text: "Review source, dependencies, Terraform, Docker, and Kubernetes with findings tied to exact lines.", href: "/register" },
@@ -113,6 +114,8 @@ export default function HomePage() {
           {featureCards.map(({ icon: Icon, title, text, href }, index) => <TiltCard key={title} delay={index % 3 + 1} className="cg-feature-card cg-card group relative overflow-hidden rounded-[20px] border border-white/[.075] bg-gradient-to-br from-[#0d1a27] to-[#08111b] transition duration-300 hover:border-cyan-300/25 hover:shadow-[0_18px_55px_rgba(5,128,160,.15)]"><span className={`cg-feature-icon cg-feature-icon--${index + 1} grid size-11 place-items-center rounded-xl border border-violet-300/15 bg-violet-400/[.09] text-violet-200`}><Icon size={19} /></span><div className="mt-7 flex items-center justify-between"><h3 className="text-[15px] font-semibold tracking-[-.02em] text-white">{title}</h3><span className="text-[10px] font-medium text-zinc-600">0{index + 1}</span></div><p className="mt-2.5 text-[12px] leading-6 text-zinc-400">{text}</p><Link href={href} className="mt-5 inline-flex items-center gap-1.5 text-[11px] font-medium text-cyan-200 transition group-hover:text-white">Explore <ArrowRight size={12} /></Link></TiltCard>)}
         </div>
       </section>
+
+      <ScaleTelemetry />
 
       <section id="workflow" data-cg-workflow-section className="cg-workflow-section relative border-y border-white/[.06] bg-[#0a0815]/70">
         <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-72 w-[760px] -translate-x-1/2 rounded-full bg-purple-700/[.12] blur-[100px]" />
