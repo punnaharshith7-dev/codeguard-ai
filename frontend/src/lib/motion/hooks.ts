@@ -31,6 +31,28 @@ export function useReveal<T extends HTMLElement>(options: { threshold?: number; 
   return ref;
 }
 
+export function useVisibility<T extends HTMLElement>(options: { rootMargin?: string } = {}) {
+  const ref = useRef<T>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    if (!("IntersectionObserver" in window)) {
+      setIsVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => setIsVisible(Boolean(entry?.isIntersecting)), {
+      threshold: 0,
+      rootMargin: options.rootMargin ?? "64px 0px",
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [options.rootMargin]);
+
+  return [ref, isVisible] as const;
+}
+
 export function useMagnetic<T extends HTMLElement>(strength = 8) {
   const { effectiveIntensity } = useMotionSettings();
   const onPointerMove = useCallback((event: PointerEvent<T>) => {
@@ -83,16 +105,18 @@ export function useTilt<T extends HTMLElement>(maxDegrees = 7) {
   return { onPointerMove, onPointerLeave };
 }
 
-export function useCountUp(target: number, options: { duration?: keyof typeof MOTION.duration; from?: number; resetKey?: string } = {}) {
+export function useCountUp(target: number, options: { duration?: keyof typeof MOTION.duration; from?: number; resetKey?: string; enabled?: boolean } = {}) {
   const { effectiveIntensity } = useMotionSettings();
   const from = options.from ?? 0;
   const durationKey = options.duration ?? "slow";
   const resetKey = options.resetKey;
+  const enabled = options.enabled ?? true;
   const [value, setValue] = useState(from);
   const currentValue = useRef(from);
   const previousResetKey = useRef(resetKey);
 
   useEffect(() => {
+    if (!enabled) return;
     const start = resetKey !== undefined && previousResetKey.current !== resetKey ? from : currentValue.current;
     previousResetKey.current = resetKey;
     if (effectiveIntensity === "minimal") {
@@ -113,7 +137,7 @@ export function useCountUp(target: number, options: { duration?: keyof typeof MO
       if (progress >= 1) unsubscribe();
     });
     return unsubscribe;
-  }, [durationKey, effectiveIntensity, from, resetKey, target]);
+  }, [durationKey, effectiveIntensity, enabled, from, resetKey, target]);
 
   return value;
 }

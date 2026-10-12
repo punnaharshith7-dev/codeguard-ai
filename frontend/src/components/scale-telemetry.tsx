@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Activity, ArrowUpRight, Check, Clock3, Globe2, Radio, ShieldCheck } from "lucide-react";
 import { useMotionSettings } from "@/components/motion-system-provider";
-import { useCountUp } from "@/lib/motion/hooks";
+import { useCountUp, useVisibility } from "@/lib/motion/hooks";
 import { scaleDemoData } from "@/lib/scale-demo-data";
 
 function Sparkline({ values, color, label }: { values: readonly number[]; color: string; label: string }) {
@@ -59,17 +59,18 @@ function DemoEventStream() {
 
 export function ScaleTelemetry() {
   const { effectiveIntensity } = useMotionSettings();
+  const [sectionRef, isVisible] = useVisibility<HTMLElement>();
   const [sampleIndex, setSampleIndex] = useState(0);
-  const requests = useCountUp(scaleDemoData.requestsPerSecond[sampleIndex], { duration: "base" });
+  const requests = useCountUp(scaleDemoData.requestsPerSecond[sampleIndex], { duration: "base", enabled: isVisible });
   const queueCircumference = 2 * Math.PI * 28;
 
   useEffect(() => {
-    if (effectiveIntensity === "minimal") return;
+    if (effectiveIntensity === "minimal" || !isVisible) return;
     const timer = window.setInterval(() => setSampleIndex((index) => (index + 1) % scaleDemoData.requestsPerSecond.length), scaleDemoData.tickerIntervalMs);
     return () => window.clearInterval(timer);
-  }, [effectiveIntensity]);
+  }, [effectiveIntensity, isVisible]);
 
-  return <section data-scroll-reveal="rise" className="cg-scale-section relative isolate overflow-hidden border-y border-cyan-200/[.08] bg-[#07101a]/85">
+  return <section ref={sectionRef} data-scroll-reveal="rise" data-motion-visible={isVisible ? "true" : "false"} className="cg-scale-section relative isolate overflow-hidden border-y border-cyan-200/[.08] bg-[#07101a]/85">
     <div aria-hidden="true" className="cg-scale-aurora" />
     <div className="relative mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-28">
       <div className="mx-auto max-w-3xl text-center">

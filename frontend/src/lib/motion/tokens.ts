@@ -21,8 +21,24 @@ export const MOTION = {
   },
   stagger: {
     tight: 0.045,
+    character: 0.022,
     base: 0.08,
     relaxed: 0.12,
+  },
+  loop: {
+    pulse: 2.8,
+    arc: 3.8,
+    orbital: 4.9,
+    atmosphere: 15,
+    stream: 18,
+  },
+  defer: {
+    heroSceneMs: 12_000,
+    ambientSceneMs: 4_800,
+  },
+  preloader: {
+    readyMs: 120,
+    totalMs: 480,
   },
 } as const;
 
@@ -30,7 +46,7 @@ export type MotionIntensity = "full" | "balanced" | "minimal";
 
 export const MOTION_STORAGE_KEY = "codeguard-motion-intensity";
 
-export const MOTION_CSS = `:root{--cg-motion-fast:${MOTION.duration.fast * 1000}ms;--cg-motion-base:${MOTION.duration.base * 1000}ms;--cg-motion-slow:${MOTION.duration.slow * 1000}ms;--cg-motion-cinematic:${MOTION.duration.cinematic * 1000}ms;--cg-motion-ease:cubic-bezier(${MOTION.ease.standard.join(",")});--cg-motion-ease-enter:cubic-bezier(${MOTION.ease.enter.join(",")});--cg-motion-stagger-tight:${MOTION.stagger.tight * 1000}ms;--cg-motion-stagger-base:${MOTION.stagger.base * 1000}ms;--cg-motion-stagger-relaxed:${MOTION.stagger.relaxed * 1000}ms}`;
+export const MOTION_CSS = `:root{--cg-motion-fast:${MOTION.duration.fast * 1000}ms;--cg-motion-base:${MOTION.duration.base * 1000}ms;--cg-motion-slow:${MOTION.duration.slow * 1000}ms;--cg-motion-cinematic:${MOTION.duration.cinematic * 1000}ms;--cg-motion-loop-pulse:${MOTION.loop.pulse}s;--cg-motion-loop-arc:${MOTION.loop.arc}s;--cg-motion-loop-orbital:${MOTION.loop.orbital}s;--cg-motion-loop-atmosphere:${MOTION.loop.atmosphere}s;--cg-motion-loop-stream:${MOTION.loop.stream}s;--cg-motion-ease:cubic-bezier(${MOTION.ease.standard.join(",")});--cg-motion-ease-enter:cubic-bezier(${MOTION.ease.enter.join(",")});--cg-motion-stagger-tight:${MOTION.stagger.tight * 1000}ms;--cg-motion-stagger-character:${MOTION.stagger.character * 1000}ms;--cg-motion-stagger-base:${MOTION.stagger.base * 1000}ms;--cg-motion-stagger-relaxed:${MOTION.stagger.relaxed * 1000}ms}`;
 
 export const fadeUpVariants: Variants = {
   hidden: { opacity: 0, y: 12 },

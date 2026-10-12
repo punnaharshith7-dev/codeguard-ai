@@ -1,13 +1,17 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { AmbientScene } from "@/components/ambient-scene";
-import { MotionTools } from "@/components/motion-tools";
 import { useMotionSettings } from "@/components/motion-system-provider";
 import { intensityDuration, MOTION } from "@/lib/motion/tokens";
 import { subscribeMotionFrame } from "@/lib/motion/frame-loop";
+
+const MotionTools = dynamic(() => import("@/components/motion-tools").then((module) => module.MotionTools), {
+  ssr: false,
+  loading: () => null,
+});
 
 const dashboardRoute = (pathname: string) => pathname.startsWith("/dashboard");
 const publicSceneRoutes = new Set(["/", "/pricing", "/login", "/register", "/forgot-password", "/reset-password", "/privacy", "/terms"]);
@@ -15,35 +19,74 @@ const preloaderStorageKey = "codeguard-system-intro-seen";
 
 function SystemPreloader({ reducedMotion }: { reducedMotion: boolean }) {
   const [visible, setVisible] = useState(false);
+  const [closing, setClosing] = useState(false);
   const [step, setStep] = useState(0);
+  const finishTimerRef = useRef<number | null>(null);
+  const exitTimerRef = useRef<number | null>(null);
+
+  const dismiss = useCallback(() => {
+    if (exitTimerRef.current !== null) return;
+    if (finishTimerRef.current !== null) window.clearTimeout(finishTimerRef.current);
+    finishTimerRef.current = null;
+    setClosing(true);
+    try { window.sessionStorage.setItem(preloaderStorageKey, "1"); } catch { /* Intro can be replayed if storage is unavailable. */ }
+    exitTimerRef.current = window.setTimeout(() => {
+      exitTimerRef.current = null;
+      setVisible(false);
+    }, MOTION.duration.fast * 1000);
+  }, []);
 
   useEffect(() => {
-    if (reducedMotion) return;
+    if (reducedMotion) {
+      setVisible(false);
+      return;
+    }
     try {
       if (window.sessionStorage.getItem(preloaderStorageKey)) return;
-      window.sessionStorage.setItem(preloaderStorageKey, "1");
     } catch {
       // The intro is optional when session storage is unavailable.
       return;
     }
+    setClosing(false);
+    setStep(0);
     setVisible(true);
-    const stepTimer = window.setTimeout(() => setStep(1), 180);
-    const finishTimer = window.setTimeout(() => setVisible(false), 760);
-    return () => { window.clearTimeout(stepTimer); window.clearTimeout(finishTimer); };
-  }, [reducedMotion]);
+    const stepTimer = window.setTimeout(() => setStep(1), MOTION.preloader.readyMs);
+    finishTimerRef.current = window.setTimeout(dismiss, MOTION.preloader.totalMs);
+    return () => {
+      window.clearTimeout(stepTimer);
+      if (finishTimerRef.current !== null) window.clearTimeout(finishTimerRef.current);
+      if (exitTimerRef.current !== null) window.clearTimeout(exitTimerRef.current);
+      finishTimerRef.current = null;
+      exitTimerRef.current = null;
+    };
+  }, [dismiss, reducedMotion]);
 
-  return <AnimatePresence>{visible && <motion.aside className="cg-system-preloader" role="status" aria-live="polite" aria-label="Initializing the CodeGuard interface" initial={{ opacity: 1 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: MOTION.duration.fast } }}>
+  return visible ? <aside className={`cg-system-preloader${closing ? " cg-system-preloader--exit" : ""}`} role="status" aria-live="polite" aria-label="Initializing the CodeGuard interface">
     <div className="cg-system-boot" aria-hidden="true"><span className="cg-system-boot__mark">CG</span><div className="cg-system-boot__copy"><strong>SYSTEM INITIALIZING</strong><span>{step ? "INTERFACE READY" : "LOADING MOTION CORE"}</span></div><span className="cg-system-boot__indicator" /></div>
-    <button type="button" className="cg-system-skip" onClick={() => setVisible(false)}>Skip intro</button>
-  </motion.aside>}</AnimatePresence>;
+    <button type="button" className="cg-system-skip" onClick={dismiss}>Skip intro</button>
+  </aside> : null;
 }
 
 export function PageMotion({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const rootRef = useRef<HTMLDivElement>(null);
-  const prefersReducedMotion = useReducedMotion();
   const { effectiveIntensity } = useMotionSettings();
-  const motionReduced = prefersReducedMotion || effectiveIntensity === "minimal";
+  const motionReduced = effectiveIntensity === "minimal";
+  const [motionToolsReady, setMotionToolsReady] = useState(false);
+  const [paletteRequest, setPaletteRequest] = useState(0);
+
+  useEffect(() => {
+    const loadForCommandShortcut = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== "k" || motionToolsReady) return;
+      event.preventDefault();
+      setPaletteRequest((request) => request + 1);
+      setMotionToolsReady(true);
+    };
+    window.addEventListener("keydown", loadForCommandShortcut);
+    return () => {
+      window.removeEventListener("keydown", loadForCommandShortcut);
+    };
+  }, [motionToolsReady]);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -58,15 +101,24 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
       }
     }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
 
-    const observeTargets = () => {
-      root.querySelectorAll<HTMLElement>("[data-scroll-reveal]").forEach((element) => {
+    const observeTargets = (scope: ParentNode) => {
+      const candidates: HTMLElement[] = [];
+      if (scope instanceof HTMLElement && scope.matches("[data-scroll-reveal]")) candidates.push(scope);
+      candidates.push(...scope.querySelectorAll<HTMLElement>("[data-scroll-reveal]"));
+      candidates.forEach((element) => {
         if (element.classList.contains("cg-scroll-visible")) return;
         element.classList.add("cg-scroll-pending");
         observer.observe(element);
       });
     };
-    observeTargets();
-    const mutationObserver = new MutationObserver(observeTargets);
+    observeTargets(root);
+    const mutationObserver = new MutationObserver((records) => {
+      for (const record of records) {
+        for (const node of record.addedNodes) {
+          if (node instanceof HTMLElement) observeTargets(node);
+        }
+      }
+    });
     mutationObserver.observe(root, { childList: true, subtree: true });
     return () => { observer.disconnect(); mutationObserver.disconnect(); };
   }, [pathname, motionReduced]);
@@ -218,20 +270,11 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
       <div className="cg-scroll-progress" data-cg-scroll-progress aria-hidden="true" />
       <div className="cg-custom-cursor cg-custom-cursor--trail" data-cg-cursor-trail aria-hidden="true" />
       <div className="cg-custom-cursor cg-custom-cursor--dot" data-cg-cursor-dot aria-hidden="true" />
-      <SystemPreloader reducedMotion={Boolean(prefersReducedMotion || effectiveIntensity === "minimal")} />
-      <MotionTools />
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={pathname}
-          className="cg-page-content"
-          initial={motionReduced ? false : { opacity: 0, y: 7 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={motionReduced ? undefined : { opacity: 0, y: -4 }}
-          transition={{ duration: motionReduced ? 0 : intensityDuration(effectiveIntensity), ease: MOTION.ease.standard }}
-        >
-          {children}
-        </motion.div>
-      </AnimatePresence>
+      <SystemPreloader reducedMotion={motionReduced} />
+      {motionToolsReady ? <MotionTools openRequest={paletteRequest} /> : <div className="cg-motion-tools" aria-label="Motion and navigation tools"><button type="button" className="cg-command-launcher cg-command-launcher--placeholder" aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K" onClick={() => { setPaletteRequest((request) => request + 1); setMotionToolsReady(true); }}><span>Quick search</span><kbd>⌘ K</kbd></button></div>}
+      <div key={pathname} className={`cg-page-content${motionReduced ? " cg-page-content--static" : ""}`} style={{ "--cg-route-duration": `${intensityDuration(effectiveIntensity) * 1000}ms` } as CSSProperties}>
+        {children}
+      </div>
     </div>
   );
 }

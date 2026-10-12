@@ -29,7 +29,7 @@ const paletteVariants = {
   exit: { opacity: 0, y: 7, scale: 0.99, filter: "blur(5px)", transition: { duration: MOTION.duration.fast, ease: MOTION.ease.exit } },
 };
 
-export function MotionTools() {
+export function MotionTools({ openRequest = 0 }: { openRequest?: number }) {
   const router = useRouter();
   const reducedMotion = useReducedMotion();
   const { intensity, setIntensity, effectiveIntensity } = useMotionSettings();
@@ -71,6 +71,7 @@ export function MotionTools() {
   }, [open]);
 
   useEffect(() => setActiveIndex(0), [query]);
+  useEffect(() => { if (openRequest > 0) setOpen(true); }, [openRequest]);
 
   const choose = (href: string) => {
     setOpen(false);
